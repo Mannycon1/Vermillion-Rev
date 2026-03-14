@@ -1,0 +1,2123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vermillion Hotel — Revenue Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --v-red: #8B1A1A;
+  --v-red-deep: #4A0A0A;
+  --v-red-mid: #6B1212;
+  --v-red-light: #B94040;
+  --v-gold: #C9A84C;
+  --v-gold-light: #E2C97E;
+  --v-gold-dim: #A8893A;
+  --v-cream: #FAF7F2;
+  --v-cream-dark: #F0EBE1;
+  --v-parchment: #E8E0D0;
+  --v-ink: #1A1410;
+  --v-charcoal: #2C2420;
+  --v-slate: #5C5248;
+  --v-muted: #8C8278;
+  --v-green: #1A5C3A;
+  --v-green-light: #2D8A58;
+  --v-amber: #C07820;
+  --v-danger: #B82020;
+  --v-border: #D8D0C0;
+  --v-border-light: #EAE4D8;
+  --shadow-sm: 0 1px 4px rgba(26,20,16,0.08);
+  --shadow: 0 2px 12px rgba(26,20,16,0.10);
+  --shadow-lg: 0 8px 40px rgba(26,20,16,0.18);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Outfit', sans-serif; background: var(--v-cream); color: var(--v-ink); min-height: 100vh; }
+
+/* ─── HEADER ─── */
+.header {
+  background: linear-gradient(135deg, var(--v-red-deep) 0%, var(--v-red-mid) 100%);
+  border-bottom: 2px solid var(--v-gold);
+  padding: 0 36px;
+  height: 66px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+}
+.header-brand { display: flex; align-items: center; gap: 14px; }
+.header-emblem {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1.5px solid var(--v-gold);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-weight: 700; color: var(--v-gold);
+}
+.header-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: #FFF8EC; letter-spacing: 0.06em; }
+.header-tag { font-size: 10px; color: var(--v-gold-light); letter-spacing: 0.14em; text-transform: uppercase; margin-top: 1px; }
+.header-meta { text-align: right; }
+.header-meta-top { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--v-gold-light); }
+.header-meta-bot { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(226,201,126,0.55); margin-top: 2px; }
+
+/* ─── NAV ─── */
+.nav {
+  background: var(--v-red);
+  display: flex; align-items: stretch; padding: 0 36px;
+  border-bottom: 1px solid var(--v-red-deep);
+}
+.nav-btn {
+  background: none; border: none; border-bottom: 3px solid transparent;
+  font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase; color: rgba(250,247,242,0.55);
+  padding: 13px 18px; cursor: pointer; transition: all 0.18s;
+}
+.nav-btn:hover { color: #FFF8EC; }
+.nav-btn.active { color: var(--v-gold-light); border-bottom-color: var(--v-gold); }
+
+/* ─── LAYOUT ─── */
+.main { padding: 28px 36px; max-width: 1480px; margin: 0 auto; }
+
+/* ─── PAGE SECTIONS ─── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ─── PAGE HEADER ─── */
+.page-hd { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+.page-hd-left .title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 600; color: var(--v-red-deep); line-height: 1.2; }
+.page-hd-left .sub { font-size: 13px; color: var(--v-muted); margin-top: 3px; }
+.page-hd-right { display: flex; gap: 10px; flex-shrink: 0; }
+
+/* ─── CARDS ─── */
+.card { background: #fff; border: 1px solid var(--v-border); border-radius: 10px; padding: 24px; box-shadow: var(--shadow-sm); }
+.card-sm { background: #fff; border: 1px solid var(--v-border); border-radius: 8px; padding: 16px; box-shadow: var(--shadow-sm); }
+
+/* ─── STAT CARDS ─── */
+.stat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 22px; }
+.stat { background: #fff; border: 1px solid var(--v-border); border-radius: 10px; padding: 18px 20px; position: relative; overflow: hidden; }
+.stat::after { content:''; position: absolute; top:0;left:0;right:0; height:3px; background: var(--v-gold); }
+.stat-lbl { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--v-muted); margin-bottom: 8px; }
+.stat-val { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500; color: var(--v-red-deep); line-height: 1; }
+.stat-hint { font-size: 11px; color: var(--v-muted); margin-top: 5px; }
+
+/* ─── GRIDS ─── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+
+/* ─── TABLES ─── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  background: var(--v-red-deep); color: var(--v-gold-light);
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 400;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 11px 14px; text-align: left; white-space: nowrap;
+}
+tbody tr { border-bottom: 1px solid var(--v-border-light); transition: background 0.12s; }
+tbody tr:hover { background: var(--v-cream); }
+tbody td { padding: 11px 14px; vertical-align: middle; }
+
+/* ─── FORM ─── */
+.frow { display: grid; gap: 14px; margin-bottom: 14px; }
+.frow.c2 { grid-template-columns: 1fr 1fr; }
+.frow.c3 { grid-template-columns: 1fr 1fr 1fr; }
+.frow.c4 { grid-template-columns: repeat(4,1fr); }
+label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--v-slate); margin-bottom: 5px; }
+input, select, textarea {
+  width: 100%; padding: 9px 13px; border: 1px solid var(--v-border);
+  border-radius: 6px; font-family: 'Outfit', sans-serif; font-size: 13px;
+  color: var(--v-ink); background: var(--v-cream); outline: none; transition: border-color 0.18s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--v-red); background: #fff; }
+input[readonly] { background: var(--v-cream-dark); color: var(--v-muted); cursor: default; }
+
+/* ─── BUTTONS ─── */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 6px; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.05em; cursor: pointer; border: none; transition: all 0.16s; white-space: nowrap; }
+.btn-red { background: var(--v-red); color: #fff; }
+.btn-red:hover { background: var(--v-red-deep); }
+.btn-gold { background: var(--v-gold); color: var(--v-ink); }
+.btn-gold:hover { background: var(--v-gold-light); }
+.btn-ghost { background: none; border: 1px solid var(--v-border); color: var(--v-slate); }
+.btn-ghost:hover { border-color: var(--v-red); color: var(--v-red); }
+.btn-xs { padding: 5px 11px; font-size: 11px; }
+.btn-use { background: var(--v-green); color: #fff; padding: 6px 14px; font-size: 11px; font-weight: 600; border-radius: 5px; cursor: pointer; border: none; transition: all 0.16s; }
+.btn-use:hover { background: var(--v-green-light); }
+.btn-use:disabled { background: var(--v-parchment); color: var(--v-muted); cursor: not-allowed; }
+.btn-edit-sm { background: none; border: 1px solid var(--v-border); color: var(--v-slate); padding: 5px 10px; font-size: 11px; font-weight: 500; border-radius: 5px; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.14s; }
+.btn-edit-sm:hover { border-color: var(--v-gold); color: var(--v-gold-dim); }
+.btn-del-sm { background: none; border: 1px solid #f0c0c0; color: var(--v-danger); padding: 5px 10px; font-size: 11px; font-weight: 500; border-radius: 5px; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.14s; }
+.btn-del-sm:hover { background: #fff0f0; }
+
+/* ─── BADGES ─── */
+.badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; }
+.b-bar { background: #FFF3E0; color: #BF5000; border: 1px solid #FFCC80; }
+.b-pkg { background: #E8F5E9; color: #1B5E20; border: 1px solid #A5D6A7; }
+.b-grp { background: #E3F2FD; color: #0D47A1; border: 1px solid #90CAF9; }
+.b-peak { background: #FFF8E1; color: #F57F17; border: 1px solid #FFE082; font-size: 9px; padding: 2px 7px; }
+.b-lean { background: #F3E5F5; color: #6A1B9A; border: 1px solid #CE93D8; font-size: 9px; padding: 2px 7px; }
+.b-open { background: #E8F5E9; color: var(--v-green); border: 1px solid #A5D6A7; font-size: 9px; padding: 2px 7px; }
+.b-low  { background: #FFF8E1; color: var(--v-amber); border: 1px solid #FFE082; font-size: 9px; padding: 2px 7px; }
+.b-closed { background: #FFEBEE; color: var(--v-danger); border: 1px solid #FFCDD2; font-size: 9px; padding: 2px 7px; }
+.b-active { background: #E8F5E9; color: #1B5E20; border: 1px solid #A5D6A7; font-size: 10px; padding: 2px 8px; }
+.b-cancelled { background: #FFEBEE; color: #B71C1C; border: 1px solid #FFCDD2; font-size: 10px; padding: 2px 8px; }
+
+/* ─── AVAILABILITY BAR ─── */
+.avail-bar { display: flex; align-items: center; gap: 8px; min-width: 160px; }
+.avail-track { flex: 1; height: 7px; background: var(--v-parchment); border-radius: 4px; overflow: hidden; }
+.avail-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+.af-hi { background: var(--v-green-light); }
+.af-md { background: var(--v-amber); }
+.af-lo { background: var(--v-danger); }
+.avail-txt { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--v-charcoal); min-width: 52px; text-align: right; }
+
+/* ─── MONO ─── */
+.mono { font-family: 'DM Mono', monospace; }
+.sk-id { font-family: 'DM Mono', monospace; font-size: 11px; background: var(--v-cream-dark); padding: 2px 7px; border-radius: 4px; color: var(--v-muted); border: 1px solid var(--v-border); }
+
+/* ─── SKU CARD (Dashboard) ─── */
+.sku-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+.sku-card {
+  background: #fff; border: 1px solid var(--v-border); border-radius: 10px;
+  padding: 18px 20px; position: relative; overflow: hidden;
+  transition: box-shadow 0.18s, transform 0.18s;
+}
+.sku-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.sku-card-bar { position: absolute; top: 0; left: 0; width: 4px; height: 100%; border-radius: 10px 0 0 10px; }
+.sku-card-bar.cat-bar { background: var(--v-amber); }
+.sku-card-bar.cat-pkg { background: var(--v-green-light); }
+.sku-card-bar.cat-grp { background: #2979FF; }
+.sku-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; padding-left: 10px; }
+.sku-card-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 600; color: var(--v-red-deep); line-height: 1.2; }
+.sku-card-code { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--v-muted); margin-top: 2px; }
+.sku-card-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+.sku-card-body { padding-left: 10px; }
+.sku-card-rates { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+.sku-rate-item { background: var(--v-cream); border-radius: 6px; padding: 8px 12px; }
+.sku-rate-lbl { font-size: 10px; color: var(--v-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+.sku-rate-val { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; color: var(--v-red); }
+.sku-avail-section { margin: 12px 0; }
+.sku-avail-lbl { font-size: 10px; color: var(--v-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; }
+.sku-avail-row { display: flex; align-items: center; gap: 8px; }
+.sku-avail-nums { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; color: var(--v-ink); }
+.sku-avail-denom { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--v-muted); margin-top: 2px; }
+.sku-card-footer { display: flex; justify-content: space-between; align-items: center; padding-left: 10px; padding-top: 12px; border-top: 1px solid var(--v-border-light); margin-top: 8px; }
+
+/* ─── MONTH FILTER TABS ─── */
+.month-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 20px; }
+.mtab { background: none; border: 1px solid var(--v-border); border-radius: 20px; padding: 6px 14px; font-size: 11px; font-family: 'Outfit', sans-serif; font-weight: 500; color: var(--v-muted); cursor: pointer; transition: all 0.15s; }
+.mtab:hover { border-color: var(--v-red); color: var(--v-red); }
+.mtab.active { background: var(--v-red); color: #fff; border-color: var(--v-red); }
+
+/* ─── INFO BOX ─── */
+.info-box { background: #FFF8E8; border: 1px solid var(--v-gold-light); border-radius: 7px; padding: 12px 16px; font-size: 12px; color: var(--v-charcoal); margin: 12px 0; }
+.info-box strong { color: var(--v-red-deep); }
+.warn-box { background: #FFF3E0; border: 1px solid #FFCC80; border-radius: 7px; padding: 12px 16px; font-size: 12px; color: #7B3800; margin: 10px 0; }
+.ok-box { background: #E8F5E9; border: 1px solid #A5D6A7; border-radius: 7px; padding: 12px 16px; font-size: 12px; color: #1B5E20; margin: 10px 0; }
+.err-box { background: #FFEBEE; border: 1px solid #FFCDD2; border-radius: 7px; padding: 12px 16px; font-size: 12px; color: #B71C1C; margin: 10px 0; }
+
+/* ─── MODAL ─── */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(26,20,16,0.65); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
+.overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 12px; padding: 32px; width: 580px; max-width: 96vw; max-height: 92vh; overflow-y: auto; box-shadow: var(--shadow-lg); border-top: 4px solid var(--v-red); }
+.modal-lg { width: 720px; }
+.modal-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: var(--v-red-deep); margin-bottom: 22px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--v-border-light); }
+
+/* ─── TOAST ─── */
+.toast { position: fixed; bottom: 28px; right: 28px; background: var(--v-red-deep); color: var(--v-cream); padding: 13px 20px; border-radius: 8px; font-size: 13px; border-left: 4px solid var(--v-gold); box-shadow: var(--shadow-lg); z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.toast.show { opacity: 1; }
+
+/* ─── DIVIDER ─── */
+.divider { height: 1px; background: var(--v-border-light); margin: 18px 0; }
+
+/* ─── EMPTY STATE ─── */
+.empty { text-align: center; padding: 48px 0; color: var(--v-muted); }
+.empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+/* ─── MISC ─── */
+.text-red { color: var(--v-red); }
+.text-green { color: var(--v-green); }
+.text-amber { color: var(--v-amber); }
+.text-danger { color: var(--v-danger); }
+.text-muted { color: var(--v-muted); }
+.fw6 { font-weight: 600; }
+.fs11 { font-size: 11px; }
+.mt16 { margin-top: 16px; }
+.mt20 { margin-top: 20px; }
+.mb16 { margin-bottom: 16px; }
+.mb20 { margin-bottom: 20px; }
+.flex { display: flex; }
+.fxb { display: flex; justify-content: space-between; align-items: center; }
+.gap8 { gap: 8px; }
+.gap12 { gap: 12px; }
+.gap16 { gap: 16px; }
+.summary-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--v-border-light); font-size: 13px; }
+.summary-row:last-child { border-bottom: none; }
+.summary-row .k { color: var(--v-muted); }
+.summary-row .v { font-family: 'DM Mono', monospace; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-brand">
+    <div class="header-emblem">V</div>
+    <div>
+      <div class="header-name">Vermillion Hotel</div>
+      <div class="header-tag">Revenue Management System · 2026</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div class="header-meta-top">98 Rooms &nbsp;·&nbsp; 5 Room Types &nbsp;·&nbsp; FY 2026 Budget</div>
+    <div class="header-meta-bot" id="clock"></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn active" data-page="dashboard">Dashboard</button>
+  <button class="nav-btn" data-page="create-sku">Create Rate SKUs</button>
+  <button class="nav-btn" data-page="sku-list">Rate SKU Board</button>
+  <button class="nav-btn" data-page="transactions">Transaction History</button>
+  <button class="nav-btn" data-page="budget-ref">2026 Budget Reference</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE: DASHBOARD
+══════════════════════════════════════════════════════ -->
+<div id="page-dashboard" class="page active">
+  <div class="page-hd">
+    <div class="page-hd-left">
+      <div class="title">Revenue Dashboard</div>
+      <div class="sub">Live availability and running balance across all Rate SKUs</div>
+    </div>
+    <div class="page-hd-right">
+      <button class="btn btn-ghost" onclick="goPage('create-sku')">+ Create SKU</button>
+      <button class="btn btn-red" onclick="openUseModal(null)">Use a Rate</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stat-grid" id="dash-stats">
+    <div class="stat">
+      <div class="stat-lbl">Total SKUs Active</div>
+      <div class="stat-val" id="d-sku-count">0</div>
+      <div class="stat-hint">Rate codes created</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Total Allotment</div>
+      <div class="stat-val" id="d-total-allot">0</div>
+      <div class="stat-hint">Room nights across SKUs</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Rooms Used</div>
+      <div class="stat-val" id="d-rooms-used">0</div>
+      <div class="stat-hint">Deducted from inventory</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Balance Available</div>
+      <div class="stat-val" id="d-balance">0</div>
+      <div class="stat-hint">Remaining room nights</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Revenue Logged</div>
+      <div class="stat-val" id="d-revenue">₱0</div>
+      <div class="stat-hint">From transactions</div>
+    </div>
+  </div>
+
+  <!-- Month filter -->
+  <div class="month-tabs" id="dash-month-tabs"></div>
+
+  <!-- SKU Cards -->
+  <div id="dash-sku-cards">
+    <div class="empty"><div class="empty-icon">🏨</div><div>No Rate SKUs yet. Go to <strong>Create Rate SKUs</strong> to get started.</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE: CREATE RATE SKU
+══════════════════════════════════════════════════════ -->
+<div id="page-create-sku" class="page">
+  <div class="page-hd">
+    <div class="page-hd-left">
+      <div class="title">Create Rate SKU</div>
+      <div class="sub">Define a rate code with room type, category, season, and allotment</div>
+    </div>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <!-- FORM -->
+    <div class="card">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--v-red-deep);margin-bottom:20px" id="sku-form-heading">New Rate SKU</div>
+      <input type="hidden" id="sf-edit-id">
+
+      <div class="frow c2">
+        <div>
+          <label>Rate Code Name</label>
+          <input type="text" id="sf-code" placeholder="e.g. WKND-BAR-DLX-MAR">
+        </div>
+        <div>
+          <label>Month</label>
+          <select id="sf-month" onchange="onSkuFormChange()">
+            <option>January</option><option>February</option><option>March</option>
+            <option>April</option><option>May</option><option>June</option>
+            <option>July</option><option>August</option><option>September</option>
+            <option>October</option><option>November</option><option>December</option>
+          </select>
+        </div>
+      </div>
+      <div class="frow c2">
+        <div>
+          <label>Rate Category</label>
+          <select id="sf-cat" onchange="onSkuFormChange()">
+            <option value="BAR">BAR — Best Available Rate</option>
+            <option value="PKG">Packages & Promotions</option>
+            <option value="GRP">Group / Corporate</option>
+          </select>
+        </div>
+        <div>
+          <label>Room Type</label>
+          <select id="sf-room" onchange="onSkuFormChange()">
+            <option value="Deluxe">Deluxe (48 rooms)</option>
+            <option value="Deluxe Premier">Deluxe Premier (41 rooms)</option>
+            <option value="Studio Suite">Studio Suite (3 rooms)</option>
+            <option value="One Bedroom Suite">One Bedroom Suite (5 rooms)</option>
+            <option value="Presidential Suite">Presidential Suite (1 room)</option>
+          </select>
+        </div>
+      </div>
+      <div class="frow c2">
+        <div>
+          <label>Rate Period <span id="sf-period-hint" style="color:var(--v-amber);font-size:10px;text-transform:none;letter-spacing:0"></span></label>
+          <select id="sf-period" onchange="onSkuFormChange()">
+            <option value="Peak">Peak (Apr, May, Oct, Nov, Dec)</option>
+            <option value="Lean">Lean (Jan, Feb, Mar, Jun, Jul, Aug, Sep)</option>
+          </select>
+        </div>
+        <div>
+          <label>Room Allotment <span id="sf-allot-hint" style="color:var(--v-muted);font-size:10px;text-transform:none;letter-spacing:0"></span></label>
+          <input type="number" id="sf-allot" placeholder="# rooms" min="1">
+        </div>
+      </div>
+      <div class="frow c2">
+        <div>
+          <label>Rate per Room / Night (₱) <span style="color:var(--v-muted);font-size:10px;text-transform:none;letter-spacing:0">— select from rate table</span></label>
+          <select id="sf-rate" onchange="onSkuRateChange()">
+            <option value="">— Select rate —</option>
+          </select>
+        </div>
+        <div>
+          <label>Budget Reference ADR</label>
+          <input type="number" id="sf-ref-adr" readonly placeholder="—">
+        </div>
+      </div>
+      <div class="frow">
+        <div>
+          <label>Description / Inclusions</label>
+          <textarea id="sf-desc" rows="2" placeholder="e.g. Bed & Breakfast, complimentary airport transfer, late checkout…"></textarea>
+        </div>
+      </div>
+
+      <div id="sf-info" class="info-box" style="margin-bottom:0"></div>
+
+      <div style="display:flex;gap:10px;margin-top:18px">
+        <button class="btn btn-red" onclick="saveSku()">Save Rate SKU</button>
+        <button class="btn btn-ghost" onclick="resetSkuForm()">Clear</button>
+      </div>
+    </div>
+
+    <!-- REFERENCE PANEL -->
+    <div>
+      <div class="card mb16" id="ref-panel">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--v-red-deep);margin-bottom:14px">Rate Reference</div>
+        <div id="ref-content"><div class="text-muted fs11">Select room type and category to view reference rates.</div></div>
+      </div>
+      <div class="card">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--v-red-deep);margin-bottom:14px">Monthly Room Night Budget</div>
+        <div id="monthly-allot-ref"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXISTING SKUs MINI TABLE -->
+  <div class="card mt20">
+    <div class="fxb mb16">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--v-red-deep)">Existing Rate SKUs</div>
+      <span id="sku-mini-count" class="text-muted fs11"></span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>SKU ID</th><th>Code</th><th>Category</th><th>Room Type</th>
+            <th>Month</th><th>Period</th><th>Rate (₱)</th><th>Allotment</th><th>Available</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="sku-mini-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE: RATE SKU BOARD
+══════════════════════════════════════════════════════ -->
+<div id="page-sku-list" class="page">
+  <div class="page-hd">
+    <div class="page-hd-left">
+      <div class="title">Rate SKU Board</div>
+      <div class="sub">All active rate codes with live availability — click USE to create a booking</div>
+    </div>
+    <div class="page-hd-right">
+      <button class="btn btn-ghost" onclick="goPage('create-sku')">+ New SKU</button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb20" style="padding:14px 20px">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <div style="flex:1;min-width:150px">
+        <select id="sb-cat" onchange="renderSkuBoard()">
+          <option value="">All Categories</option>
+          <option value="BAR">BAR</option>
+          <option value="PKG">Packages & Promotions</option>
+          <option value="GRP">Group / Corporate</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:150px">
+        <select id="sb-room" onchange="renderSkuBoard()">
+          <option value="">All Room Types</option>
+          <option value="Deluxe">Deluxe</option>
+          <option value="Deluxe Premier">Deluxe Premier</option>
+          <option value="Studio Suite">Studio Suite</option>
+          <option value="One Bedroom Suite">One Bedroom Suite</option>
+          <option value="Presidential Suite">Presidential Suite</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:130px">
+        <select id="sb-month" onchange="renderSkuBoard()">
+          <option value="">All Months</option>
+          <option>January</option><option>February</option><option>March</option>
+          <option>April</option><option>May</option><option>June</option>
+          <option>July</option><option>August</option><option>September</option>
+          <option>October</option><option>November</option><option>December</option>
+        </select>
+      </div>
+      <button class="btn btn-ghost" style="flex-shrink:0" onclick="clearBoardFilters()">Clear</button>
+    </div>
+  </div>
+
+  <div id="sku-board-content"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE: TRANSACTION HISTORY
+══════════════════════════════════════════════════════ -->
+<div id="page-transactions" class="page">
+  <div class="page-hd">
+    <div class="page-hd-left">
+      <div class="title">Transaction History</div>
+      <div class="sub">All room deductions with full audit trail — edit or delete any entry</div>
+    </div>
+    <div class="page-hd-right">
+      <button class="btn btn-red" onclick="openUseModal(null)">+ New Deduction</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="g4 mb20">
+    <div class="stat">
+      <div class="stat-lbl">Total Transactions</div>
+      <div class="stat-val" id="tx-count">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Rooms Deducted</div>
+      <div class="stat-val" id="tx-rooms">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Revenue Logged</div>
+      <div class="stat-val" id="tx-rev">₱0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Active Transactions</div>
+      <div class="stat-val" id="tx-active">0</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb16" style="padding:14px 20px">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <input type="text" id="tx-search" placeholder="Search guest, SKU, account, TXN ID…" style="flex:2;min-width:200px" oninput="renderTxHistory()">
+      <select id="tx-f-month" style="flex:1;min-width:130px" onchange="renderTxHistory()">
+        <option value="">All Months</option>
+        <option>January</option><option>February</option><option>March</option>
+        <option>April</option><option>May</option><option>June</option>
+        <option>July</option><option>August</option><option>September</option>
+        <option>October</option><option>November</option><option>December</option>
+      </select>
+      <select id="tx-f-cat" style="flex:1;min-width:130px" onchange="renderTxHistory()">
+        <option value="">All Categories</option>
+        <option value="BAR">BAR</option>
+        <option value="PKG">Packages & Promotions</option>
+        <option value="GRP">Group / Corporate</option>
+      </select>
+      <select id="tx-f-status" style="flex:1;min-width:120px" onchange="renderTxHistory()">
+        <option value="">All Status</option>
+        <option value="Active">Active</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>TXN ID</th>
+            <th>Date</th>
+            <th>Rate SKU</th>
+            <th>Category</th>
+            <th>Room Type</th>
+            <th>Month</th>
+            <th>Use (Rooms)</th>
+            <th>Nights</th>
+            <th>Rate (₱)</th>
+            <th>Total (₱)</th>
+            <th>Guest / Account</th>
+            <th>Details</th>
+            <th>Status</th>
+            <th>Update</th>
+          </tr>
+        </thead>
+        <tbody id="tx-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE: 2026 BUDGET REFERENCE (Original Dashboards)
+══════════════════════════════════════════════════════ -->
+<div id="page-budget-ref" class="page">
+  <div class="page-hd">
+    <div class="page-hd-left">
+      <div class="title">2026 Budget Reference</div>
+      <div class="sub" id="ref-sub">Loaded from built-in 2026 budget data · <span id="ref-source-label" style="color:var(--v-gold-dim);font-weight:600">Default</span></div>
+    </div>
+    <div class="page-hd-right">
+      <button class="btn btn-ghost" onclick="document.getElementById('ref-file-input').click()">⬆ Upload New File</button>
+      <button class="btn btn-ghost" id="ref-reset-btn" onclick="resetRefData()" style="display:none">↺ Reset to Default</button>
+    </div>
+  </div>
+
+  <!-- UPLOAD ZONE -->
+  <div id="ref-upload-zone" class="card mb20" style="display:none;border:2px dashed var(--v-gold);background:var(--v-cream);text-align:center;padding:32px 24px;cursor:pointer" onclick="document.getElementById('ref-file-input').click()">
+    <div style="font-size:32px;margin-bottom:10px">📂</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--v-red-deep);margin-bottom:6px">Drop your Excel file here or click to browse</div>
+    <div style="font-size:12px;color:var(--v-muted)">Supports .xlsx and .xls — must contain <strong>MARKET SEGMENT</strong> and <strong>REV PER ROOM</strong> sheets matching the Vermillion budget format</div>
+  </div>
+  <input type="file" id="ref-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleRefUpload(this)">
+
+  <!-- PARSE STATUS -->
+  <div id="ref-parse-status" style="display:none" class="card mb20" style="padding:14px 20px"></div>
+
+  <!-- STAT TILES -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px">
+    <div class="stat"><div class="stat-lbl">Total Rooms</div><div class="stat-val" id="ref-stat-rooms">98</div><div class="stat-hint" id="ref-stat-rooms-hint">5 room types</div></div>
+    <div class="stat"><div class="stat-lbl">Annual Room Nights</div><div class="stat-val" id="ref-stat-rns">35,770</div><div class="stat-hint" id="ref-stat-occ">55.1% avg occupancy</div></div>
+    <div class="stat"><div class="stat-lbl">Budget Revenue</div><div class="stat-val" id="ref-stat-rev">₱90.7M</div><div class="stat-hint" id="ref-stat-adr">Avg ADR ₱4,600</div></div>
+    <div class="stat"><div class="stat-lbl">RevPAR</div><div class="stat-val" id="ref-stat-revpar">₱2,536</div><div class="stat-hint">Revenue per avail. room</div></div>
+  </div>
+
+  <!-- Monthly Budget Table -->
+  <div class="card mb20">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--v-red-deep);margin-bottom:16px">Monthly Budget Overview — 2026</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th><th>Season</th><th>Occ %</th>
+            <th>BAR RNs</th><th>BAR ADR (₱)</th><th>BAR Rev (₱)</th>
+            <th>Pkg/Promo RNs</th><th>Pkg ADR (₱)</th><th>Pkg Rev (₱)</th>
+            <th>Corp/Group RNs</th><th>Corp ADR (₱)</th><th>Corp Rev (₱)</th>
+            <th>Total RNs</th><th>Total Budget Rev (₱)</th>
+          </tr>
+        </thead>
+        <tbody id="ref-monthly-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Two column: Rate Structure + Revenue Forecast -->
+  <div class="g2 mb20">
+    <!-- BAR Rates -->
+    <div class="card">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--v-red-deep);margin-bottom:14px">BAR Rates by Room Type</div>
+      <table>
+        <thead><tr><th>Room Type</th><th>Rooms</th><th>Peak (₱)</th><th>Lean −25% (₱)</th><th>Ave Rate (₱)</th></tr></thead>
+        <tbody id="ref-rate-tbody-bar"></tbody>
+      </table>
+    </div>
+
+    <!-- PKG Rates -->
+    <div class="card">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--v-red-deep);margin-bottom:14px">Packages & Promotions Rates</div>
+      <table>
+        <thead><tr><th>Room Type</th><th>Rooms</th><th>Peak (₱)</th><th>Lean −25% (₱)</th><th>Ave Rate (₱)</th></tr></thead>
+        <tbody id="ref-rate-tbody-pkg"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="g2 mb20">
+    <!-- Group/Corp Rates -->
+    <div class="card">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--v-red-deep);margin-bottom:14px">Group / Corporate Rates</div>
+      <table>
+        <thead><tr><th>Room Type</th><th>Rooms</th><th>Peak (₱)</th><th>Lean −25% (₱)</th><th>Ave Rate (₱)</th></tr></thead>
+        <tbody id="ref-rate-tbody-grp"></tbody>
+      </table>
+    </div>
+
+    <!-- Revenue Forecast Summary -->
+    <div class="card">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--v-red-deep);margin-bottom:14px">Revenue Forecast by Segment</div>
+      <div class="summary-row"><span class="k">BAR — Room Nights</span><span class="v">3,850</span></div>
+      <div class="summary-row"><span class="k">BAR — Avg ADR</span><span class="v">₱6,233</span></div>
+      <div class="summary-row"><span class="k">BAR — Revenue</span><span class="v">₱23,998,185</span></div>
+      <div class="summary-row"><span class="k">BAR — Share</span><span class="v"><span class="badge b-bar">26.5%</span></span></div>
+      <div class="divider" style="margin:10px 0"></div>
+      <div class="summary-row"><span class="k">Packages &amp; Promotions — RNs</span><span class="v">6,915</span></div>
+      <div class="summary-row"><span class="k">Packages — Avg ADR</span><span class="v">₱5,242</span></div>
+      <div class="summary-row"><span class="k">Packages — Revenue</span><span class="v">₱36,245,141</span></div>
+      <div class="summary-row"><span class="k">Packages — Share</span><span class="v"><span class="badge b-pkg">40.0%</span></span></div>
+      <div class="divider" style="margin:10px 0"></div>
+      <div class="summary-row"><span class="k">Group / Corporate — RNs</span><span class="v">8,330</span></div>
+      <div class="summary-row"><span class="k">Group — Avg ADR</span><span class="v">₱3,657</span></div>
+      <div class="summary-row"><span class="k">Group — Revenue</span><span class="v">₱30,465,305</span></div>
+      <div class="summary-row"><span class="k">Group — Share</span><span class="v"><span class="badge b-grp">33.6%</span></span></div>
+      <div class="divider" style="margin:10px 0"></div>
+      <div class="summary-row"><span class="k fw6">Total Forecast Revenue</span><span class="v fw6" style="color:var(--v-red);font-size:16px">₱90,708,631</span></div>
+      <div class="summary-row"><span class="k">Total Forecast RNs</span><span class="v">19,095</span></div>
+      <div class="summary-row"><span class="k">Overall Avg ADR</span><span class="v">₱4,600</span></div>
+      <div class="summary-row"><span class="k">RevPAR</span><span class="v">₱2,536</span></div>
+    </div>
+  </div>
+
+  <!-- Consolidated by Room Type -->
+  <div class="card mb20">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--v-red-deep);margin-bottom:14px">Consolidated Rates by Room Type (All Segments)</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Room Type</th><th>No. Rooms</th><th>Ave Occ</th>
+            <th>BAR Peak</th><th>BAR Lean</th><th>BAR Ave</th>
+            <th>Pkg Peak</th><th>Pkg Lean</th><th>Pkg Ave</th>
+            <th>Grp Peak</th><th>Grp Lean</th><th>Grp Ave</th>
+            <th>Consolidated Ave</th>
+          </tr>
+        </thead>
+        <tbody id="ref-consol-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Room Inventory -->
+  <div class="card">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--v-red-deep);margin-bottom:14px">Room Inventory & Occupancy (Peak vs Lean)</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Room Type</th><th>No. Rooms</th><th>Area (sqm)</th><th>Ave Occ</th><th>Peak RNs (153 nights)</th><th>Lean RNs (212 nights)</th><th>Total RNs / Year</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Deluxe</strong></td><td class="mono">48</td><td class="mono">40</td><td class="mono">63%</td><td class="mono">4,627</td><td class="mono">6,411</td><td class="mono fw6">11,038</td></tr>
+          <tr><td><strong>Deluxe Premier</strong></td><td class="mono">41</td><td class="mono">40</td><td class="mono">53%</td><td class="mono">3,325</td><td class="mono">4,607</td><td class="mono fw6">7,931</td></tr>
+          <tr><td><strong>Studio Suite</strong></td><td class="mono">3</td><td class="mono">42</td><td class="mono">30%</td><td class="mono">138</td><td class="mono">191</td><td class="mono fw6">329</td></tr>
+          <tr><td><strong>One Bedroom Suite</strong></td><td class="mono">5</td><td class="mono">91</td><td class="mono">20%</td><td class="mono">153</td><td class="mono">212</td><td class="mono fw6">365</td></tr>
+          <tr><td><strong>Presidential Suite</strong></td><td class="mono">1</td><td class="mono">245</td><td class="mono">15%</td><td class="mono">23</td><td class="mono">32</td><td class="mono fw6">55</td></tr>
+          <tr style="background:var(--v-cream)"><td><strong>Total</strong></td><td class="mono fw6">98</td><td class="mono">—</td><td class="mono fw6">55.1%</td><td class="mono fw6">8,266</td><td class="mono fw6">11,453</td><td class="mono fw6 text-red">19,718</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- ══════════════ MODAL: CREATE/EDIT SKU ══════════════ -->
+<!-- (handled inline in the Create page) -->
+
+<!-- ══════════════ MODAL: USE RATE (Deduct) ══════════════ -->
+<div class="overlay" id="use-modal">
+  <div class="modal">
+    <div class="modal-title" id="use-modal-title">Use Rate SKU — Log Deduction</div>
+    <input type="hidden" id="um-sku-id">
+
+    <div class="frow c2">
+      <div>
+        <label>Rate SKU</label>
+        <select id="um-sku" onchange="onUmSkuChange()">
+          <option value="">— Select Rate SKU —</option>
+        </select>
+      </div>
+      <div>
+        <label>Transaction Date</label>
+        <input type="date" id="um-date">
+      </div>
+    </div>
+
+    <div id="um-sku-info" style="display:none"></div>
+
+    <div class="frow c3">
+      <div>
+        <label>Rooms to Use</label>
+        <input type="number" id="um-rooms" min="1" placeholder="# rooms" oninput="calcUmTotal()">
+      </div>
+      <div>
+        <label>Number of Nights</label>
+        <input type="number" id="um-nights" min="1" value="1" oninput="calcUmTotal()">
+      </div>
+      <div>
+        <label>Rate Used (₱/room/night)</label>
+        <select id="um-rate" onchange="calcUmTotal()">
+          <option value="">— Select rate —</option>
+        </select>
+      </div>
+    </div>
+    <div class="frow c2">
+      <div>
+        <label>Guest / Account Name</label>
+        <input type="text" id="um-guest" placeholder="Company, group or guest name">
+      </div>
+      <div>
+        <label>Total Revenue (₱)</label>
+        <input type="number" id="um-total" readonly placeholder="Auto-calculated">
+      </div>
+    </div>
+    <div class="frow">
+      <div>
+        <label>Details / Notes</label>
+        <textarea id="um-details" rows="2" placeholder="Booking reference, special requests, confirming officer, inclusions…"></textarea>
+      </div>
+    </div>
+
+    <div id="um-avail-msg"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('use-modal')">Cancel</button>
+      <button class="btn btn-red" onclick="saveUse()">Record Deduction</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL: EDIT TRANSACTION ══════════════ -->
+<div class="overlay" id="edit-tx-modal">
+  <div class="modal modal-lg">
+    <div class="modal-title">Edit Transaction</div>
+    <input type="hidden" id="etx-id">
+
+    <div class="frow c2">
+      <div>
+        <label>Guest / Account</label>
+        <input type="text" id="etx-guest">
+      </div>
+      <div>
+        <label>Transaction Date</label>
+        <input type="date" id="etx-date">
+      </div>
+    </div>
+    <div class="frow c3">
+      <div>
+        <label>Rooms Used</label>
+        <input type="number" id="etx-rooms" min="1" oninput="calcEtxTotal()">
+      </div>
+      <div>
+        <label>Nights</label>
+        <input type="number" id="etx-nights" min="1" oninput="calcEtxTotal()">
+      </div>
+      <div>
+        <label>Rate (₱)</label>
+        <input type="number" id="etx-rate" oninput="calcEtxTotal()">
+      </div>
+    </div>
+    <div class="frow c2">
+      <div>
+        <label>Details / Notes</label>
+        <textarea id="etx-details" rows="2"></textarea>
+      </div>
+      <div>
+        <label>Status</label>
+        <select id="etx-status">
+          <option value="Active">Active</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+    </div>
+    <div class="frow c2">
+      <div>
+        <label>Total Revenue (₱)</label>
+        <input type="number" id="etx-total" readonly>
+      </div>
+      <div></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('edit-tx-modal')">Cancel</button>
+      <button class="btn btn-red" onclick="saveEditTx()">Update Transaction</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// DATA — from VERMILLION_FORECAST_2026.xls
+// ══════════════════════════════════════════
+
+const ROOM_TYPES = {
+  'Deluxe':            { count: 48, sqm: 40 },
+  'Deluxe Premier':    { count: 41, sqm: 40 },
+  'Studio Suite':      { count: 3,  sqm: 42 },
+  'One Bedroom Suite': { count: 5,  sqm: 91 },
+  'Presidential Suite':{ count: 1,  sqm: 245 }
+};
+
+// Peak months: Apr, May, Oct, Nov, Dec | Lean: everything else
+const PEAK_MONTHS = ['April','May','October','November','December'];
+
+// ── Full rate table from REV PER ROOM sheet ──
+// Each entry: { label, value, cat, room, period, type }
+// type: 'peak' | 'lean' | 'ave'
+const RATE_TABLE = [
+  // ── BAR ──
+  { label:'BAR · Deluxe · Peak',              value:5888,     cat:'BAR', room:'Deluxe',            period:'Peak', type:'peak' },
+  { label:'BAR · Deluxe · Lean (−25%)',       value:4416,     cat:'BAR', room:'Deluxe',            period:'Lean', type:'lean' },
+  { label:'BAR · Deluxe · Ave Rate',          value:5033,     cat:'BAR', room:'Deluxe',            period:'Ave',  type:'ave'  },
+  { label:'BAR · Deluxe Premier · Peak',      value:7388,     cat:'BAR', room:'Deluxe Premier',    period:'Peak', type:'peak' },
+  { label:'BAR · Deluxe Premier · Lean (−25%)',value:5541,    cat:'BAR', room:'Deluxe Premier',    period:'Lean', type:'lean' },
+  { label:'BAR · Deluxe Premier · Ave Rate',  value:6315,     cat:'BAR', room:'Deluxe Premier',    period:'Ave',  type:'ave'  },
+  { label:'BAR · Studio Suite · Peak',        value:8388,     cat:'BAR', room:'Studio Suite',      period:'Peak', type:'peak' },
+  { label:'BAR · Studio Suite · Lean (−25%)', value:6291,     cat:'BAR', room:'Studio Suite',      period:'Lean', type:'lean' },
+  { label:'BAR · Studio Suite · Ave Rate',    value:7170,     cat:'BAR', room:'Studio Suite',      period:'Ave',  type:'ave'  },
+  { label:'BAR · One Bedroom Suite · Peak',   value:13388,    cat:'BAR', room:'One Bedroom Suite', period:'Peak', type:'peak' },
+  { label:'BAR · One Bedroom Suite · Lean (−25%)',value:10041,cat:'BAR', room:'One Bedroom Suite', period:'Lean', type:'lean' },
+  { label:'BAR · One Bedroom Suite · Ave Rate',value:11444,   cat:'BAR', room:'One Bedroom Suite', period:'Ave',  type:'ave'  },
+  { label:'BAR · Presidential Suite · Peak',  value:45388,    cat:'BAR', room:'Presidential Suite',period:'Peak', type:'peak' },
+  { label:'BAR · Presidential Suite · Lean (−25%)',value:34041,cat:'BAR',room:'Presidential Suite',period:'Lean', type:'lean' },
+  { label:'BAR · Presidential Suite · Ave Rate',value:38797,  cat:'BAR', room:'Presidential Suite',period:'Ave',  type:'ave'  },
+  { label:'BAR · Segment Ave Rate',           value:6233,     cat:'BAR', room:'All',               period:'Ave',  type:'ave'  },
+
+  // ── PACKAGES / PROMOTIONS ──
+  { label:'Pkg/Promo · Deluxe · Peak',              value:5299,  cat:'PKG', room:'Deluxe',            period:'Peak', type:'peak' },
+  { label:'Pkg/Promo · Deluxe · Lean (−25%)',       value:3974,  cat:'PKG', room:'Deluxe',            period:'Lean', type:'lean' },
+  { label:'Pkg/Promo · Deluxe · Ave Rate',          value:4530,  cat:'PKG', room:'Deluxe',            period:'Ave',  type:'ave'  },
+  { label:'Pkg/Promo · Deluxe Premier · Peak',      value:6649,  cat:'PKG', room:'Deluxe Premier',    period:'Peak', type:'peak' },
+  { label:'Pkg/Promo · Deluxe Premier · Lean (−25%)',value:4987, cat:'PKG', room:'Deluxe Premier',    period:'Lean', type:'lean' },
+  { label:'Pkg/Promo · Deluxe Premier · Ave Rate',  value:5684,  cat:'PKG', room:'Deluxe Premier',    period:'Ave',  type:'ave'  },
+  { label:'Pkg/Promo · Studio Suite · Peak',        value:7549,  cat:'PKG', room:'Studio Suite',      period:'Peak', type:'peak' },
+  { label:'Pkg/Promo · Studio Suite · Lean (−25%)', value:5662,  cat:'PKG', room:'Studio Suite',      period:'Lean', type:'lean' },
+  { label:'Pkg/Promo · Studio Suite · Ave Rate',    value:6453,  cat:'PKG', room:'Studio Suite',      period:'Ave',  type:'ave'  },
+  { label:'Pkg/Promo · One Bedroom Suite · Peak',   value:12049, cat:'PKG', room:'One Bedroom Suite', period:'Peak', type:'peak' },
+  { label:'Pkg/Promo · One Bedroom Suite · Lean (−25%)',value:9037,cat:'PKG',room:'One Bedroom Suite',period:'Lean', type:'lean' },
+  { label:'Pkg/Promo · One Bedroom Suite · Ave Rate',value:10300,cat:'PKG', room:'One Bedroom Suite', period:'Ave',  type:'ave'  },
+  { label:'Pkg/Promo · Presidential Suite · Peak',  value:40849, cat:'PKG', room:'Presidential Suite',period:'Peak', type:'peak' },
+  { label:'Pkg/Promo · Presidential Suite · Lean (−25%)',value:30637,cat:'PKG',room:'Presidential Suite',period:'Lean',type:'lean'},
+  { label:'Pkg/Promo · Presidential Suite · Ave Rate',value:34918,cat:'PKG',room:'Presidential Suite',period:'Ave',  type:'ave'  },
+  { label:'Pkg/Promo · Segment Ave Rate',           value:5242,  cat:'PKG', room:'All',               period:'Ave',  type:'ave'  },
+
+  // ── GROUP / CORPORATE ──
+  { label:'Group/Corp · Deluxe · Peak',              value:3827,  cat:'GRP', room:'Deluxe',            period:'Peak', type:'peak' },
+  { label:'Group/Corp · Deluxe · Lean (−25%)',       value:2870,  cat:'GRP', room:'Deluxe',            period:'Lean', type:'lean' },
+  { label:'Group/Corp · Deluxe · Ave Rate',          value:3271,  cat:'GRP', room:'Deluxe',            period:'Ave',  type:'ave'  },
+  { label:'Group/Corp · Deluxe Premier · Peak',      value:4802,  cat:'GRP', room:'Deluxe Premier',    period:'Peak', type:'peak' },
+  { label:'Group/Corp · Deluxe Premier · Lean (−25%)',value:3602, cat:'GRP', room:'Deluxe Premier',    period:'Lean', type:'lean' },
+  { label:'Group/Corp · Deluxe Premier · Ave Rate',  value:4105,  cat:'GRP', room:'Deluxe Premier',    period:'Ave',  type:'ave'  },
+  { label:'Group/Corp · Studio Suite · Peak',        value:5452,  cat:'GRP', room:'Studio Suite',      period:'Peak', type:'peak' },
+  { label:'Group/Corp · Studio Suite · Lean (−25%)', value:4089,  cat:'GRP', room:'Studio Suite',      period:'Lean', type:'lean' },
+  { label:'Group/Corp · Studio Suite · Ave Rate',    value:4661,  cat:'GRP', room:'Studio Suite',      period:'Ave',  type:'ave'  },
+  { label:'Group/Corp · One Bedroom Suite · Peak',   value:8702,  cat:'GRP', room:'One Bedroom Suite', period:'Peak', type:'peak' },
+  { label:'Group/Corp · One Bedroom Suite · Lean (−25%)',value:6527,cat:'GRP',room:'One Bedroom Suite',period:'Lean', type:'lean' },
+  { label:'Group/Corp · One Bedroom Suite · Ave Rate',value:7439, cat:'GRP', room:'One Bedroom Suite', period:'Ave',  type:'ave'  },
+  { label:'Group/Corp · Presidential Suite · Peak',  value:29502, cat:'GRP', room:'Presidential Suite',period:'Peak', type:'peak' },
+  { label:'Group/Corp · Presidential Suite · Lean (−25%)',value:22127,cat:'GRP',room:'Presidential Suite',period:'Lean',type:'lean'},
+  { label:'Group/Corp · Presidential Suite · Ave Rate',value:25218,cat:'GRP',room:'Presidential Suite',period:'Ave',  type:'ave'  },
+  { label:'Group/Corp · Segment Ave Rate',           value:3657,  cat:'GRP', room:'All',               period:'Ave',  type:'ave'  },
+];
+
+// Build lookup: RATES[cat][room] = { Peak, Lean, Ave }
+const RATES = {};
+RATE_TABLE.forEach(r => {
+  if (!RATES[r.cat]) RATES[r.cat] = {};
+  if (!RATES[r.cat][r.room]) RATES[r.cat][r.room] = {};
+  RATES[r.cat][r.room][r.period] = r.value;
+});
+
+// Build rate dropdown options filtered by cat + room + period
+function buildRateOptions(cat, room, period, selectedVal) {
+  // Show: exact match first (cat+room+period), then same cat+room (other periods), then same cat (all rooms), then all
+  let primary = RATE_TABLE.filter(r => r.cat===cat && r.room===room);
+  let secondary = RATE_TABLE.filter(r => r.cat===cat && r.room!==room && r.room!=='All');
+  let segment = RATE_TABLE.filter(r => r.cat===cat && r.room==='All');
+  let other = RATE_TABLE.filter(r => r.cat!==cat);
+
+  let html = '<option value="">— Select rate —</option>';
+
+  if (primary.length) {
+    html += `<optgroup label="── ${cat==='BAR'?'BAR':cat==='PKG'?'Packages/Promotions':'Group/Corporate'} · ${room} ──">`;
+    primary.forEach(r => {
+      const sel = (selectedVal && Number(selectedVal)===r.value) ? 'selected' : '';
+      // Highlight suggested period
+      const hint = (period && r.period===period) ? ' ★' : '';
+      html += `<option value="${r.value}" ${sel}>${r.label}${hint} — ₱${r.value.toLocaleString()}</option>`;
+    });
+    html += '</optgroup>';
+  }
+  if (secondary.length) {
+    html += `<optgroup label="── Other ${cat==='BAR'?'BAR':cat==='PKG'?'Pkg/Promo':'Grp/Corp'} room types ──">`;
+    secondary.forEach(r => {
+      const sel = (selectedVal && Number(selectedVal)===r.value) ? 'selected' : '';
+      html += `<option value="${r.value}" ${sel}>${r.label} — ₱${r.value.toLocaleString()}</option>`;
+    });
+    html += '</optgroup>';
+  }
+  if (segment.length) {
+    html += `<optgroup label="── Segment Averages ──">`;
+    segment.forEach(r => {
+      const sel = (selectedVal && Number(selectedVal)===r.value) ? 'selected' : '';
+      html += `<option value="${r.value}" ${sel}>${r.label} — ₱${r.value.toLocaleString()}</option>`;
+    });
+    html += '</optgroup>';
+  }
+  if (other.length) {
+    html += `<optgroup label="── All Other Rates ──">`;
+    other.forEach(r => {
+      const sel = (selectedVal && Number(selectedVal)===r.value) ? 'selected' : '';
+      html += `<option value="${r.value}" ${sel}>${r.label} — ₱${r.value.toLocaleString()}</option>`;
+    });
+    html += '</optgroup>';
+  }
+  return html;
+}
+
+// Monthly room nights per category (from spreadsheet Budget 2026)
+const MONTHLY_RNS = {
+  January:  { BAR: 121,   PKG: 48,  GRP: 30,  CORP: 30,  occ: 0.0649, avail: 3038 },
+  February: { BAR: 190,   PKG: 121, GRP: 322, CORP: 34,  occ: 0.2307, avail: 2940 },
+  March:    { BAR: 228,   PKG: 152, GRP: 380, CORP: 228, occ: 0.25,   avail: 3038 },
+  April:    { BAR: 265,   PKG: 176, GRP: 441, CORP: 88,  occ: 0.30,   avail: 2940 },
+  May:      { BAR: 592,   PKG: 395, GRP: 987, CORP: 395, occ: 0.65,   avail: 3038 },
+  June:     { BAR: 662,   PKG: 441, GRP: 1103,CORP: 662, occ: 0.75,   avail: 2940 },
+  July:     { BAR: 684,   PKG: 456, GRP: 1139,CORP: 797, occ: 0.75,   avail: 3038 },
+  August:   { BAR: 547,   PKG: 365, GRP: 911, CORP: 547, occ: 0.60,   avail: 3038 },
+  September:{ BAR: 529,   PKG: 353, GRP: 882, CORP: 353, occ: 0.60,   avail: 2940 },
+  October:  { BAR: 684,   PKG: 228, GRP: 1367,CORP: 456, occ: 0.75,   avail: 3038 },
+  November: { BAR: 875,   PKG: 375, GRP: 1249,CORP: 500, occ: 0.85,   avail: 2940 },
+  December: { BAR: 904,   PKG: 387, GRP: 1291,CORP: 542, occ: 0.85,   avail: 3038 }
+};
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let skus = [];
+let transactions = [];
+let skuSeq = 1000;
+let txSeq = 5000;
+let dashMonth = 'All';
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+const fmt = n => n == null || isNaN(n) ? '—' : '₱' + Number(n).toLocaleString('en-PH', {minimumFractionDigits:0,maximumFractionDigits:0});
+const fmtN = n => n == null ? '—' : Number(n).toLocaleString();
+const pct = n => (n*100).toFixed(1)+'%';
+const todayStr = () => new Date().toISOString().split('T')[0];
+const isPeak = m => PEAK_MONTHS.includes(m);
+const catLabel = c => c==='BAR'?'BAR':c==='PKG'?'Pkg/Promo':'Group/Corp';
+const catBadge = c => c==='BAR'?'<span class="badge b-bar">BAR</span>':c==='PKG'?'<span class="badge b-pkg">Pkg/Promo</span>':'<span class="badge b-grp">Group/Corp</span>';
+const getSkuAvail = sku => {
+  const used = transactions.filter(t => t.skuId===sku.id && t.status==='Active').reduce((s,t)=>s+t.rooms,0);
+  return sku.allotment - used;
+};
+const getSkuUsed = sku => transactions.filter(t=>t.skuId===sku.id&&t.status==='Active').reduce((s,t)=>s+t.rooms,0);
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 3000);
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+
+// Clock
+setInterval(()=>{
+  const d=new Date();
+  document.getElementById('clock').textContent =
+    d.toLocaleDateString('en-PH',{weekday:'short',month:'short',day:'numeric',year:'numeric'})+
+    ' · '+d.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+},1000);
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelector(`[data-page="${name}"]`).classList.add('active');
+  if (name==='dashboard')    renderDashboard();
+  if (name==='create-sku')   renderSkuMiniTable(); renderSkuFormRef();
+  if (name==='sku-list')     renderSkuBoard();
+  if (name==='transactions') renderTxHistory();
+  if (name==='budget-ref')   renderBudgetRef();
+}
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>goPage(btn.dataset.page));
+});
+// Overlay close
+document.querySelectorAll('.overlay').forEach(o=>{
+  o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); });
+});
+
+// ══════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════
+function renderDashboard() {
+  const activeSkus = skus;
+  const activeTx = transactions.filter(t=>t.status==='Active');
+  const totalAllot = activeSkus.reduce((s,k)=>s+k.allotment,0);
+  const totalUsed  = activeTx.reduce((s,t)=>s+t.rooms,0);
+  const totalRev   = activeTx.reduce((s,t)=>s+t.total,0);
+
+  document.getElementById('d-sku-count').textContent   = activeSkus.length;
+  document.getElementById('d-total-allot').textContent = fmtN(totalAllot);
+  document.getElementById('d-rooms-used').textContent  = fmtN(totalUsed);
+  document.getElementById('d-balance').textContent     = fmtN(totalAllot - totalUsed);
+  document.getElementById('d-revenue').textContent     = fmt(totalRev);
+
+  // Month tabs
+  const months = ['All',...[...new Set(skus.map(s=>s.month))].sort((a,b)=>{
+    const order=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    return order.indexOf(a)-order.indexOf(b);
+  })];
+  document.getElementById('dash-month-tabs').innerHTML = months.map(m=>
+    `<button class="mtab ${m===dashMonth?'active':''}" onclick="setDashMonth('${m}',this)">${m}</button>`
+  ).join('');
+
+  renderDashCards();
+}
+
+function setDashMonth(m, el) {
+  dashMonth = m;
+  document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderDashCards();
+}
+
+function renderDashCards() {
+  const filtered = dashMonth==='All' ? skus : skus.filter(s=>s.month===dashMonth);
+  const el = document.getElementById('dash-sku-cards');
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🏨</div><div>No Rate SKUs for this filter.</div></div>';
+    return;
+  }
+
+  // Group by month in calendar order
+  const MONTH_ORDER = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const byMonth = {};
+  filtered.forEach(s => {
+    if (!byMonth[s.month]) byMonth[s.month] = [];
+    byMonth[s.month].push(s);
+  });
+  const sortedMonths = MONTH_ORDER.filter(m => byMonth[m]);
+
+  let html = '';
+  sortedMonths.forEach(month => {
+    const monthSkus = byMonth[month];
+    const mAllot   = monthSkus.reduce((s,k) => s + k.allotment, 0);
+    const mUsed    = monthSkus.reduce((s,k) => s + getSkuUsed(k), 0);
+    const mAvail   = mAllot - mUsed;
+    const mRev     = transactions.filter(t => t.month===month && t.status==='Active').reduce((s,t) => s+t.total, 0);
+    const peak     = isPeak(month);
+    const pctFill  = mAllot > 0 ? mUsed/mAllot : 0;
+    const fc       = pctFill < 0.5 ? 'af-hi' : pctFill < 0.8 ? 'af-md' : 'af-lo';
+
+    html += `
+    <div style="margin-bottom:32px">
+      <!-- Month Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid var(--v-border)">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:var(--v-red-deep)">${month}</div>
+          <span class="badge ${peak ? 'b-peak' : 'b-lean'}">${peak ? 'Peak Season' : 'Lean Season'}</span>
+          <span style="font-size:12px;color:var(--v-muted)">${monthSkus.length} SKU${monthSkus.length>1?'s':''}</span>
+        </div>
+        <!-- Month summary bar -->
+        <div style="display:flex;align-items:center;gap:20px">
+          <div style="text-align:right">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--v-muted)">Allotment</div>
+            <div style="font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--v-ink)">${fmtN(mAllot)}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--v-muted)">Used</div>
+            <div style="font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--v-danger)">${fmtN(mUsed)}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--v-muted)">Balance</div>
+            <div style="font-family:'DM Mono',monospace;font-size:15px;font-weight:600;color:${mAvail<=0?'var(--v-danger)':mAvail<10?'var(--v-amber)':'var(--v-green)'}">${fmtN(mAvail)}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--v-muted)">Revenue</div>
+            <div style="font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--v-red)">${fmt(mRev)}</div>
+          </div>
+          <div style="width:120px">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--v-muted);margin-bottom:4px">${(pctFill*100).toFixed(0)}% used</div>
+            <div class="avail-track" style="height:8px">
+              <div class="avail-fill ${fc}" style="width:${Math.min(100,pctFill*100).toFixed(1)}%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SKU Cards for this month -->
+      <div class="sku-cards-grid">
+        ${monthSkus.map(sku => {
+          const avail  = getSkuAvail(sku);
+          const used   = getSkuUsed(sku);
+          const pctA   = sku.allotment>0 ? avail/sku.allotment : 0;
+          const fc2    = pctA>0.5?'af-hi':pctA>0.2?'af-md':'af-lo';
+          const statusBadge = avail<=0 ? '<span class="badge b-closed">CLOSED</span>' :
+                              avail<=5  ? '<span class="badge b-low">LOW AVAIL</span>' :
+                                          '<span class="badge b-open">OPEN</span>';
+          const catBarCls = sku.cat==='BAR'?'cat-bar':sku.cat==='PKG'?'cat-pkg':'cat-grp';
+          const catBadgeEl = catBadge(sku.cat);
+          const periodBadge = `<span class="badge ${isPeak(sku.month)?'b-peak':'b-lean'}">${sku.period}</span>`;
+          return `<div class="sku-card">
+            <div class="sku-card-bar ${catBarCls}"></div>
+            <div class="sku-card-head">
+              <div>
+                <div class="sku-card-name">${sku.code}</div>
+                <div class="sku-card-code">${sku.id}</div>
+                <div class="sku-card-tags">${catBadgeEl} ${periodBadge} <span class="badge" style="background:var(--v-cream-dark);color:var(--v-slate);border:1px solid var(--v-border)">${sku.roomType}</span></div>
+              </div>
+              ${statusBadge}
+            </div>
+            <div class="sku-card-body">
+              <div class="sku-card-rates">
+                <div class="sku-rate-item">
+                  <div class="sku-rate-lbl">Rate / Night</div>
+                  <div class="sku-rate-val">${fmt(sku.rate)}</div>
+                </div>
+                <div class="sku-rate-item">
+                  <div class="sku-rate-lbl">Budget ADR Ref</div>
+                  <div class="sku-rate-val" style="font-size:13px;color:var(--v-muted)">${fmt(sku.refAdr)}</div>
+                </div>
+              </div>
+              <div class="sku-avail-section">
+                <div class="sku-avail-lbl">Availability &nbsp; <span style="color:var(--v-muted)">${used} used of ${sku.allotment} allotted</span></div>
+                <div class="sku-avail-row">
+                  <div>
+                    <div class="sku-avail-nums ${avail<=0?'text-danger':avail<=5?'text-amber':'text-green'}">${avail}</div>
+                    <div class="sku-avail-denom">rooms left</div>
+                  </div>
+                  <div style="flex:1;margin:0 10px">
+                    <div class="avail-track" style="height:10px">
+                      <div class="avail-fill ${fc2}" style="width:${Math.max(0,pctA*100).toFixed(1)}%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              ${sku.desc?`<div class="fs11 text-muted" style="margin-top:6px">${sku.desc}</div>`:''}
+            </div>
+            <div class="sku-card-footer">
+              <div class="flex gap8">
+                <button class="btn-edit-sm" onclick="openEditSkuModal('${sku.id}')">Edit</button>
+                <button class="btn-del-sm" onclick="deleteSku('${sku.id}')">Delete</button>
+              </div>
+              <button class="btn-use" onclick="openUseModal('${sku.id}')" ${avail<=0?'disabled':''}>
+                USE &nbsp;→
+              </button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+// CREATE SKU FORM
+// ══════════════════════════════════════════
+function onSkuFormChange() {
+  const cat    = document.getElementById('sf-cat').value;
+  const room   = document.getElementById('sf-room').value;
+  const month  = document.getElementById('sf-month').value;
+
+  // Auto-set period
+  const autoPeriod = isPeak(month) ? 'Peak' : 'Lean';
+  document.getElementById('sf-period-hint').textContent = `(suggested: ${autoPeriod} for ${month})`;
+  document.getElementById('sf-period').value = autoPeriod;
+
+  // Max allotment hint
+  const rtc = ROOM_TYPES[room]?.count || '—';
+  document.getElementById('sf-allot-hint').textContent = `(max: ${rtc} rooms for ${room})`;
+
+  // Populate rate dropdown — pre-select the suggested period rate
+  const currentRate = document.getElementById('sf-rate').value;
+  const rateDropdown = document.getElementById('sf-rate');
+  rateDropdown.innerHTML = buildRateOptions(cat, room, autoPeriod, currentRate);
+
+  // If nothing selected yet, auto-select the peak/lean match
+  if (!rateDropdown.value) {
+    const suggested = RATE_TABLE.find(r => r.cat===cat && r.room===room && r.period===autoPeriod);
+    if (suggested) rateDropdown.value = suggested.value;
+  }
+  onSkuRateChange();
+
+  // Info box
+  const rateData = RATES[cat]?.[room];
+  if (rateData) {
+    document.getElementById('sf-info').innerHTML =
+      `<strong>${room} · ${catLabel(cat)}</strong><br>
+       Peak: <strong>${fmt(rateData.Peak)}</strong> &nbsp;·&nbsp;
+       Lean: <strong>${fmt(rateData.Lean)}</strong> &nbsp;·&nbsp;
+       Ave: <strong>${fmt(rateData.Ave)}</strong><br>
+       <span style="color:var(--v-muted)">Total ${room} rooms in hotel: ${rtc}</span>`;
+  }
+  renderSkuFormRef();
+}
+
+function onSkuRateChange() {
+  const rate = parseFloat(document.getElementById('sf-rate').value) || 0;
+  document.getElementById('sf-ref-adr').value = rate || '';
+}
+
+function renderSkuFormRef() {
+  const cat   = document.getElementById('sf-cat')?.value || 'BAR';
+  const month = document.getElementById('sf-month')?.value || 'January';
+  const mn = MONTHLY_RNS[month];
+  if (!mn) return;
+
+  const catKey = cat==='BAR'?'BAR':cat==='PKG'?'PKG':'GRP';
+  const rns = cat==='GRP' ? (mn.GRP||0) : mn[catKey]||0;
+
+  document.getElementById('ref-content').innerHTML = `
+    <div class="summary-row"><span class="k">${month} — ${catLabel(cat)} Budget RNs</span><span class="v">${fmtN(rns)}</span></div>
+    <div class="summary-row"><span class="k">Monthly Available Room Nights</span><span class="v">${fmtN(mn.avail)}</span></div>
+    <div class="summary-row"><span class="k">Budget Occupancy</span><span class="v">${pct(mn.occ)}</span></div>
+    <div class="summary-row"><span class="k">Season</span><span class="v">${isPeak(month)?'<span class="badge b-peak">Peak</span>':'<span class="badge b-lean">Lean</span>'}</span></div>
+  `;
+
+  document.getElementById('monthly-allot-ref').innerHTML = `
+    <div class="summary-row"><span class="k">BAR Room Nights</span><span class="v">${fmtN(mn.BAR)}</span></div>
+    <div class="summary-row"><span class="k">Packages / Promotions</span><span class="v">${fmtN(mn.PKG)}</span></div>
+    <div class="summary-row"><span class="k">Group / Corporate</span><span class="v">${fmtN(mn.GRP)}</span></div>
+    <div class="summary-row"><span class="k">Total Budget RNs</span><span class="v fw6">${fmtN(mn.BAR+mn.PKG+mn.GRP)}</span></div>
+    <div class="summary-row"><span class="k">Total Available RNs</span><span class="v">${fmtN(mn.avail)}</span></div>
+  `;
+}
+
+function saveSku() {
+  const editId  = document.getElementById('sf-edit-id').value;
+  const code    = document.getElementById('sf-code').value.trim();
+  const month   = document.getElementById('sf-month').value;
+  const cat     = document.getElementById('sf-cat').value;
+  const room    = document.getElementById('sf-room').value;
+  const period  = document.getElementById('sf-period').value;
+  const allot   = parseInt(document.getElementById('sf-allot').value);
+  const rate    = parseFloat(document.getElementById('sf-rate').value) || 0;
+  const desc    = document.getElementById('sf-desc').value.trim();
+  const refAdr  = rate;
+
+  if (!code)  { alert('Enter a Rate Code name.'); return; }
+  if (!allot||allot<1) { alert('Enter a valid allotment.'); return; }
+  if (!rate||rate<1)   { alert('Enter a valid rate.'); return; }
+  const maxR = ROOM_TYPES[room]?.count || 98;
+  if (allot > maxR * 31) { /* allow multi-night totals */ }
+
+  if (editId) {
+    const s = skus.find(x=>x.id===editId);
+    Object.assign(s, {code,month,cat,roomType:room,period,allotment:allot,rate,desc,refAdr});
+    toast('Rate SKU updated: '+s.id);
+  } else {
+    const id = 'SKU-'+(skuSeq++);
+    skus.push({id,code,month,cat,roomType:room,period,allotment:allot,rate,desc,refAdr,created:todayStr()});
+    toast('Rate SKU created: '+id);
+  }
+  resetSkuForm();
+  renderSkuMiniTable();
+  renderDashboard();
+}
+
+function resetSkuForm() {
+  document.getElementById('sf-edit-id').value = '';
+  document.getElementById('sf-code').value = '';
+  document.getElementById('sf-allot').value = '';
+  document.getElementById('sf-desc').value = '';
+  document.getElementById('sf-ref-adr').value = '';
+  document.getElementById('sku-form-heading').textContent = 'New Rate SKU';
+  onSkuFormChange();
+}
+
+function openEditSkuModal(id) {
+  const s = skus.find(x=>x.id===id);
+  if (!s) return;
+  goPage('create-sku');
+  document.getElementById('sku-form-heading').textContent = 'Edit Rate SKU — '+s.id;
+  document.getElementById('sf-edit-id').value = s.id;
+  document.getElementById('sf-code').value = s.code;
+  document.getElementById('sf-month').value = s.month;
+  document.getElementById('sf-cat').value = s.cat;
+  document.getElementById('sf-room').value = s.roomType;
+  document.getElementById('sf-period').value = s.period;
+  document.getElementById('sf-allot').value = s.allotment;
+  document.getElementById('sf-desc').value = s.desc||'';
+  onSkuFormChange();
+  // Set the saved rate in dropdown after rebuild
+  document.getElementById('sf-rate').value = s.rate;
+  document.getElementById('sf-ref-adr').value = s.rate;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function deleteSku(id) {
+  if (!confirm('Delete this Rate SKU? Existing transactions will remain but the SKU will be removed.')) return;
+  skus = skus.filter(s=>s.id!==id);
+  renderSkuMiniTable();
+  renderDashboard();
+  renderSkuBoard();
+  toast('SKU deleted.');
+}
+
+function renderSkuMiniTable() {
+  document.getElementById('sku-mini-count').textContent = skus.length+' SKUs';
+  const tbody = document.getElementById('sku-mini-body');
+  if (!skus.length) {
+    tbody.innerHTML = '<tr><td colspan="10"><div class="empty" style="padding:24px 0">No SKUs yet.</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = skus.map(s=>{
+    const avail = getSkuAvail(s);
+    const pctA = s.allotment>0 ? avail/s.allotment : 0;
+    const fc = pctA>0.5?'af-hi':pctA>0.2?'af-md':'af-lo';
+    return `<tr>
+      <td><span class="sk-id">${s.id}</span></td>
+      <td><strong>${s.code}</strong>${s.desc?`<br><span class="fs11 text-muted">${s.desc.substring(0,40)}</span>`:''}</td>
+      <td>${catBadge(s.cat)}</td>
+      <td style="font-size:12px">${s.roomType}</td>
+      <td>${s.month}</td>
+      <td><span class="badge ${isPeak(s.month)?'b-peak':'b-lean'}">${s.period}</span></td>
+      <td class="mono">${fmt(s.rate)}</td>
+      <td class="mono">${fmtN(s.allotment)}</td>
+      <td>
+        <div class="avail-bar">
+          <div class="avail-track"><div class="avail-fill ${fc}" style="width:${Math.max(0,pctA*100).toFixed(1)}%"></div></div>
+          <span class="avail-txt ${avail<=0?'text-danger':''}">${avail} / ${s.allotment}</span>
+        </div>
+      </td>
+      <td style="white-space:nowrap">
+        <button class="btn-edit-sm" onclick="openEditSkuModal('${s.id}')">Edit</button>
+        <button class="btn-del-sm" onclick="deleteSku('${s.id}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// SKU BOARD
+// ══════════════════════════════════════════
+function clearBoardFilters() {
+  document.getElementById('sb-cat').value='';
+  document.getElementById('sb-room').value='';
+  document.getElementById('sb-month').value='';
+  renderSkuBoard();
+}
+function renderSkuBoard() {
+  const fcat  = document.getElementById('sb-cat').value;
+  const froom = document.getElementById('sb-room').value;
+  const fmon  = document.getElementById('sb-month').value;
+  const data  = skus.filter(s=>
+    (!fcat  || s.cat===fcat) &&
+    (!froom || s.roomType===froom) &&
+    (!fmon  || s.month===fmon)
+  );
+  const el = document.getElementById('sku-board-content');
+  if (!data.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div>No Rate SKUs match the selected filters.</div></div>';
+    return;
+  }
+  // Group by month
+  const byMonth = {};
+  const mOrder  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  data.forEach(s=>{ if(!byMonth[s.month]) byMonth[s.month]=[]; byMonth[s.month].push(s); });
+  let html = '';
+  mOrder.filter(m=>byMonth[m]).forEach(m=>{
+    html += `<div style="margin-bottom:28px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--v-red-deep);font-weight:600">${m}</div>
+        <span class="badge ${isPeak(m)?'b-peak':'b-lean'}">${isPeak(m)?'Peak Season':'Lean Season'}</span>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th>SKU ID</th><th>Rate Code</th><th>Category</th><th>Room Type</th>
+        <th>Rate (₱)</th><th>Budget ADR</th><th>Allotment</th><th>Used</th><th>Available</th><th>Status</th><th>USE</th>
+      </tr></thead><tbody>`;
+    byMonth[m].forEach(s=>{
+      const used  = getSkuUsed(s);
+      const avail = s.allotment - used;
+      const pctA  = s.allotment>0?avail/s.allotment:0;
+      const fc    = pctA>0.5?'af-hi':pctA>0.2?'af-md':'af-lo';
+      const statusBadge = avail<=0?'<span class="badge b-closed">CLOSED</span>':avail<=5?'<span class="badge b-low">LOW</span>':'<span class="badge b-open">OPEN</span>';
+      html += `<tr>
+        <td><span class="sk-id">${s.id}</span></td>
+        <td><strong>${s.code}</strong></td>
+        <td>${catBadge(s.cat)}</td>
+        <td style="font-size:12px">${s.roomType}</td>
+        <td class="mono">${fmt(s.rate)}</td>
+        <td class="mono text-muted" style="font-size:12px">${fmt(s.refAdr)}</td>
+        <td class="mono">${fmtN(s.allotment)}</td>
+        <td class="mono text-danger">${fmtN(used)}</td>
+        <td>
+          <div class="avail-bar">
+            <div class="avail-track"><div class="avail-fill ${fc}" style="width:${Math.max(0,pctA*100).toFixed(1)}%"></div></div>
+            <span class="avail-txt ${avail<=0?'text-danger':''}">${avail}</span>
+          </div>
+        </td>
+        <td>${statusBadge}</td>
+        <td><button class="btn-use" onclick="openUseModal('${s.id}')" ${avail<=0?'disabled':''}>USE →</button></td>
+      </tr>`;
+    });
+    html += '</tbody></table></div></div>';
+  });
+  el.innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+// USE MODAL (Deduct rooms)
+// ══════════════════════════════════════════
+function openUseModal(skuId) {
+  // Populate dropdown
+  const sel = document.getElementById('um-sku');
+  sel.innerHTML = '<option value="">— Select Rate SKU —</option>' +
+    skus.map(s=>{
+      const avail = getSkuAvail(s);
+      return `<option value="${s.id}" ${avail<=0?'disabled':''}>
+        ${s.id} · ${s.code} (${s.month}, ${s.roomType}, avail: ${avail})
+      </option>`;
+    }).join('');
+
+  document.getElementById('um-date').value = todayStr();
+  document.getElementById('um-rooms').value = '';
+  document.getElementById('um-nights').value = 1;
+  document.getElementById('um-rate').innerHTML = '<option value="">— Select rate —</option>';
+  document.getElementById('um-guest').value = '';
+  document.getElementById('um-details').value = '';
+  document.getElementById('um-total').value = '';
+  document.getElementById('um-sku-info').style.display = 'none';
+  document.getElementById('um-avail-msg').innerHTML = '';
+
+  if (skuId) { sel.value = skuId; onUmSkuChange(); }
+  openModal('use-modal');
+}
+
+function onUmSkuChange() {
+  const id = document.getElementById('um-sku').value;
+  const s  = skus.find(x=>x.id===id);
+  const info = document.getElementById('um-sku-info');
+  const msg  = document.getElementById('um-avail-msg');
+  if (!s) { info.style.display='none'; msg.innerHTML='';
+    document.getElementById('um-rate').innerHTML = '<option value="">— Select rate —</option>';
+    return;
+  }
+  const avail = getSkuAvail(s);
+  const used  = getSkuUsed(s);
+
+  // Populate rate dropdown filtered to this SKU's cat + room
+  const rateEl = document.getElementById('um-rate');
+  rateEl.innerHTML = buildRateOptions(s.cat, s.roomType, s.period, s.rate);
+  // Pre-select the SKU's saved rate
+  rateEl.value = s.rate;
+
+  info.style.display = 'block';
+  info.className = 'info-box';
+  info.innerHTML = `<strong>${s.code}</strong> &nbsp;·&nbsp; ${s.roomType} &nbsp;·&nbsp; ${s.month} &nbsp;·&nbsp; ${catBadge(s.cat)}<br>
+    SKU Rate: <strong>${fmt(s.rate)}</strong> / night &nbsp;·&nbsp; Period: <strong>${s.period}</strong><br>
+    Allotment: <strong>${s.allotment}</strong> &nbsp;·&nbsp; Used: <strong style="color:var(--v-danger)">${used}</strong> &nbsp;·&nbsp; Available: <strong style="color:${avail>5?'var(--v-green)':avail>0?'var(--v-amber)':'var(--v-danger)'}">${avail}</strong>`;
+  msg.innerHTML = avail>0 ?
+    `<div class="ok-box">✓ ${avail} rooms available for this SKU.</div>` :
+    `<div class="err-box">⚠ No rooms available. This SKU is fully booked.</div>`;
+  calcUmTotal();
+}
+
+function calcUmTotal() {
+  const r = parseFloat(document.getElementById('um-rooms').value)||0;
+  const n = parseFloat(document.getElementById('um-nights').value)||0;
+  const rt= parseFloat(document.getElementById('um-rate').value)||0;
+  document.getElementById('um-total').value = r&&n&&rt ? r*n*rt : '';
+}
+
+function saveUse() {
+  const skuId   = document.getElementById('um-sku').value;
+  const date    = document.getElementById('um-date').value;
+  const rooms   = parseInt(document.getElementById('um-rooms').value);
+  const nights  = parseInt(document.getElementById('um-nights').value);
+  const rate    = parseFloat(document.getElementById('um-rate').value);
+  const guest   = document.getElementById('um-guest').value.trim();
+  const details = document.getElementById('um-details').value.trim();
+  const total   = rooms*nights*rate;
+
+  if (!skuId)  { alert('Select a Rate SKU.'); return; }
+  if (!rooms||rooms<1)   { alert('Enter number of rooms.'); return; }
+  if (!nights||nights<1) { alert('Enter number of nights.'); return; }
+  if (!rate||rate<1)     { alert('Select a rate from the dropdown.'); return; }
+  if (!guest)            { alert('Enter guest/account name.'); return; }
+
+  const s = skus.find(x=>x.id===skuId);
+  const avail = getSkuAvail(s);
+  if (rooms > avail && avail > 0) {
+    if (!confirm(`You are deducting ${rooms} rooms but only ${avail} are available. Proceed?`)) return;
+  }
+
+  const id = 'TXN-'+(txSeq++);
+  transactions.push({
+    id, skuId, skuCode: s.code, cat: s.cat, roomType: s.roomType,
+    month: s.month, date, rooms, nights, rate, total, guest, details,
+    status: 'Active', created: new Date().toISOString(), updated: new Date().toISOString()
+  });
+
+  closeModal('use-modal');
+  toast('Deduction recorded: '+id);
+  renderDashboard();
+  renderSkuBoard();
+  renderSkuMiniTable();
+  if (document.getElementById('page-transactions').classList.contains('active')) renderTxHistory();
+}
+
+// ══════════════════════════════════════════
+// TRANSACTION HISTORY
+// ══════════════════════════════════════════
+function renderTxHistory() {
+  const search = (document.getElementById('tx-search')?.value||'').toLowerCase();
+  const fmon   = document.getElementById('tx-f-month')?.value||'';
+  const fcat   = document.getElementById('tx-f-cat')?.value||'';
+  const fstat  = document.getElementById('tx-f-status')?.value||'';
+
+  const all    = transactions.filter(t=>
+    (!fmon  || t.month===fmon) &&
+    (!fcat  || t.cat===fcat) &&
+    (!fstat || t.status===fstat) &&
+    (!search || [t.id,t.guest,t.skuCode,t.details||''].some(v=>v.toLowerCase().includes(search)))
+  );
+
+  const activeTx = transactions.filter(t=>t.status==='Active');
+  document.getElementById('tx-count').textContent  = transactions.length;
+  document.getElementById('tx-rooms').textContent  = fmtN(activeTx.reduce((s,t)=>s+t.rooms,0));
+  document.getElementById('tx-rev').textContent    = fmt(activeTx.reduce((s,t)=>s+t.total,0));
+  document.getElementById('tx-active').textContent = activeTx.length;
+
+  const tbody = document.getElementById('tx-body');
+  if (!all.length) {
+    tbody.innerHTML = '<tr><td colspan="14"><div class="empty" style="padding:28px 0"><div class="empty-icon">📋</div>No transactions found.</div></td></tr>';
+    return;
+  }
+  const sorted = [...all].sort((a,b)=>new Date(b.created)-new Date(a.created));
+  tbody.innerHTML = sorted.map(t=>`
+    <tr style="${t.status==='Cancelled'?'opacity:0.55':''}">
+      <td><span class="sk-id">${t.id}</span></td>
+      <td class="mono" style="font-size:11px">${t.date}</td>
+      <td><span class="sk-id">${t.skuCode}</span></td>
+      <td>${catBadge(t.cat)}</td>
+      <td style="font-size:12px">${t.roomType}</td>
+      <td style="font-size:12px">${t.month}</td>
+      <td class="mono fw6 ${t.status==='Cancelled'?'text-muted':'text-red'}">${t.rooms}</td>
+      <td class="mono">${t.nights}</td>
+      <td class="mono">${fmt(t.rate)}</td>
+      <td class="mono fw6">${t.status==='Cancelled'?'<span class="text-muted">—</span>':fmt(t.total)}</td>
+      <td><strong>${t.guest}</strong></td>
+      <td style="font-size:11px;color:var(--v-muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.details||''}">${t.details||'—'}</td>
+      <td><span class="badge ${t.status==='Active'?'b-active':'b-cancelled'}">${t.status}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn-edit-sm" onclick="openEditTxModal('${t.id}')">Edit</button>
+        <button class="btn-del-sm" onclick="deleteTx('${t.id}')">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openEditTxModal(id) {
+  const t = transactions.find(x=>x.id===id);
+  if (!t) return;
+  document.getElementById('etx-id').value = id;
+  document.getElementById('etx-guest').value = t.guest;
+  document.getElementById('etx-date').value = t.date;
+  document.getElementById('etx-rooms').value = t.rooms;
+  document.getElementById('etx-nights').value = t.nights;
+  document.getElementById('etx-rate').value = t.rate;
+  document.getElementById('etx-details').value = t.details||'';
+  document.getElementById('etx-status').value = t.status;
+  document.getElementById('etx-total').value = t.total;
+  openModal('edit-tx-modal');
+}
+
+function calcEtxTotal() {
+  const r  = parseFloat(document.getElementById('etx-rooms').value)||0;
+  const n  = parseFloat(document.getElementById('etx-nights').value)||0;
+  const rt = parseFloat(document.getElementById('etx-rate').value)||0;
+  document.getElementById('etx-total').value = r*n*rt||'';
+}
+
+function saveEditTx() {
+  const id = document.getElementById('etx-id').value;
+  const t  = transactions.find(x=>x.id===id);
+  t.guest   = document.getElementById('etx-guest').value;
+  t.date    = document.getElementById('etx-date').value;
+  t.rooms   = parseInt(document.getElementById('etx-rooms').value)||t.rooms;
+  t.nights  = parseInt(document.getElementById('etx-nights').value)||t.nights;
+  t.rate    = parseFloat(document.getElementById('etx-rate').value)||t.rate;
+  t.details = document.getElementById('etx-details').value;
+  t.status  = document.getElementById('etx-status').value;
+  t.total   = t.rooms*t.nights*t.rate;
+  t.updated = new Date().toISOString();
+  closeModal('edit-tx-modal');
+  renderTxHistory();
+  renderDashboard();
+  renderSkuBoard();
+  renderSkuMiniTable();
+  toast('Transaction updated: '+id);
+}
+
+function deleteTx(id) {
+  if (!confirm('Delete this transaction? This will restore availability for its SKU.')) return;
+  transactions = transactions.filter(t=>t.id!==id);
+  renderTxHistory();
+  renderDashboard();
+  renderSkuBoard();
+  renderSkuMiniTable();
+  toast('Transaction deleted — availability restored.');
+}
+
+// ══════════════════════════════════════════
+// BUDGET REFERENCE PAGE — Dynamic Data
+// ══════════════════════════════════════════
+
+// Default built-in data (from VERMILLION_FORECAST_2026.xls)
+const DEFAULT_MONTHLY_REF = [
+  {m:'January',   occ:.0649, bRns:121,  bADR:6100,  bRev:738100,    pRns:48,  pADR:3102,  pRev:148896,    cRns:30,   cADR:4600, cRev:138000,    tRns:197,   tRev:1024996,   peak:false},
+  {m:'February',  occ:.2307, bRns:190,  bADR:4146,  bRev:787740,    pRns:121, pADR:5007,  pRev:605847,    cRns:322,  cADR:3250, cRev:1057040,   tRns:633,   tRev:2450627,   peak:false},
+  {m:'March',     occ:.25,   bRns:228,  bADR:6233,  bRev:1420256,   pRns:152, pADR:5242,  pRev:796188,    cRns:380,  cADR:3657, cRev:1388859,   tRns:760,   tRev:3605303,   peak:false},
+  {m:'April',     occ:.30,   bRns:265,  bADR:6233,  bRev:1649330,   pRns:176, pADR:5242,  pRev:924605,    cRns:441,  cADR:3657, cRev:1612869,   tRns:882,   tRev:4186804,   peak:true},
+  {m:'May',       occ:.65,   bRns:592,  bADR:6233,  bRev:3692666,   pRns:395, pADR:5242,  pRev:2070088,   cRns:987,  cADR:3657, cRev:3611034,   tRns:1975,  tRev:9373789,   peak:true},
+  {m:'June',      occ:.75,   bRns:662,  bADR:6233,  bRev:4123325,   pRns:441, pADR:5242,  pRev:2311512,   cRns:1103, cADR:3657, cRev:4034303,   tRns:2205,  tRev:8854140,   peak:false},
+  {m:'July',      occ:.75,   bRns:684,  bADR:6233,  bRev:4260769,   pRns:456, pADR:5242,  pRev:2388563,   cRns:1139, cADR:3657, cRev:4165605,   tRns:2279,  tRev:9565936,   peak:false},
+  {m:'August',    occ:.60,   bRns:547,  bADR:6233,  bRev:3408615,   pRns:365, pADR:5242,  pRev:1910850,   cRns:911,  cADR:3657, cRev:3331263,   tRns:1823,  tRev:8652728,   peak:false},
+  {m:'September', occ:.60,   bRns:529,  bADR:6233,  bRev:3298660,   pRns:353, pADR:5242,  pRev:1849210,   cRns:882,  cADR:3657, cRev:3225738,   tRns:1764,  tRev:8373608,   peak:false},
+  {m:'October',   occ:.75,   bRns:684,  bADR:6233,  bRev:4260769,   pRns:228, pADR:5242,  pRev:1197281,   cRns:1367, cADR:3657, cRev:4999894,   tRns:2279,  tRev:10454944,  peak:true},
+  {m:'November',  occ:.85,   bRns:875,  bADR:6233,  bRev:5451951,   pRns:375, pADR:5242,  pRev:1965785,   cRns:1249, cADR:3657, cRev:4568796,   tRns:2499,  tRev:11986532,  peak:true},
+  {m:'December',  occ:.85,   bRns:904,  bADR:6233,  bRev:5633683,   pRns:387, pADR:5242,  pRev:2030278,   cRns:1291, cADR:3657, cRev:4723122,   tRns:2582,  tRev:12386084,  peak:true}
+];
+
+const DEFAULT_RATE_TABLE_REF = {
+  BAR: {
+    'Deluxe':            {Peak:5888,  Lean:4416,  Ave:5033},
+    'Deluxe Premier':    {Peak:7388,  Lean:5541,  Ave:6315},
+    'Studio Suite':      {Peak:8388,  Lean:6291,  Ave:7170},
+    'One Bedroom Suite': {Peak:13388, Lean:10041, Ave:11444},
+    'Presidential Suite':{Peak:45388, Lean:34041, Ave:38797},
+    segAve: 6233
+  },
+  PKG: {
+    'Deluxe':            {Peak:5299,  Lean:3974,  Ave:4530},
+    'Deluxe Premier':    {Peak:6649,  Lean:4987,  Ave:5684},
+    'Studio Suite':      {Peak:7549,  Lean:5662,  Ave:6453},
+    'One Bedroom Suite': {Peak:12049, Lean:9037,  Ave:10300},
+    'Presidential Suite':{Peak:40849, Lean:30637, Ave:34918},
+    segAve: 5242
+  },
+  GRP: {
+    'Deluxe':            {Peak:3827,  Lean:2870,  Ave:3271},
+    'Deluxe Premier':    {Peak:4802,  Lean:3602,  Ave:4105},
+    'Studio Suite':      {Peak:5452,  Lean:4089,  Ave:4661},
+    'One Bedroom Suite': {Peak:8702,  Lean:6527,  Ave:7439},
+    'Presidential Suite':{Peak:29502, Lean:22127, Ave:25218},
+    segAve: 3657
+  }
+};
+
+// Live data (starts as default, gets replaced on upload)
+let MONTHLY_REF     = DEFAULT_MONTHLY_REF.map(r=>({...r}));
+let RATE_TABLE_REF  = JSON.parse(JSON.stringify(DEFAULT_RATE_TABLE_REF));
+let refFileName     = 'Default (VERMILLION_FORECAST_2026.xls)';
+let refIsCustom     = false;
+
+// ─── FILE UPLOAD HANDLER ───
+function handleRefUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('ref-parse-status');
+  statusEl.style.display = 'block';
+  statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:10px;color:var(--v-slate)"><span style="font-size:20px">⏳</span> Reading <strong>${file.name}</strong>…</div>`;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb   = XLSX.read(data, {type:'array'});
+      parseAndApplyWorkbook(wb, file.name);
+    } catch(err) {
+      statusEl.innerHTML = `<div class="err-box">❌ Could not read file: ${err.message}</div>`;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  // Reset input so same file can be re-uploaded
+  input.value = '';
+}
+
+// ─── WORKBOOK PARSER ───
+function parseAndApplyWorkbook(wb, fileName) {
+  const statusEl = document.getElementById('ref-parse-status');
+  const errors   = [];
+  const warnings = [];
+
+  // ── 1. MARKET SEGMENT sheet ──
+  const msName = wb.SheetNames.find(n => n.toUpperCase().includes('MARKET') || n.toUpperCase().includes('SEGMENT'));
+  if (!msName) { errors.push('Could not find "MARKET SEGMENT" sheet. Make sure the sheet name contains "MARKET" or "SEGMENT".'); }
+
+  // ── 2. REV PER ROOM sheet ──
+  const rprName = wb.SheetNames.find(n => n.toUpperCase().includes('REV') || n.toUpperCase().includes('ROOM'));
+  if (!rprName) { errors.push('Could not find "REV PER ROOM" sheet. Make sure the sheet name contains "REV" or "ROOM".'); }
+
+  if (errors.length) {
+    statusEl.innerHTML = `<div class="err-box"><strong>❌ Parse Error</strong><br>${errors.join('<br>')}<br><br>Available sheets: <strong>${wb.SheetNames.join(', ')}</strong></div>`;
+    return;
+  }
+
+  const msData  = XLSX.utils.sheet_to_json(wb.Sheets[msName],  {header:1, defval:null});
+  const rprData = XLSX.utils.sheet_to_json(wb.Sheets[rprName], {header:1, defval:null});
+
+  // ── Parse MARKET SEGMENT → monthly data ──
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const PEAK_M      = ['April','May','October','November','December'];
+  const newMonthly  = [];
+
+  // Find rows for each month
+  for (let ri = 0; ri < msData.length; ri++) {
+    const cell0 = String(msData[ri][0] || '').trim();
+    const mIdx  = MONTH_NAMES.indexOf(cell0);
+    if (mIdx === -1) continue;
+    const month = MONTH_NAMES[mIdx];
+
+    // Budget 2026 row is next row where col[1] contains "Budget 2026" or "Budget"
+    let budRow = null;
+    for (let rj = ri+1; rj <= ri+3 && rj < msData.length; rj++) {
+      const lbl = String(msData[rj][1] || '').toLowerCase();
+      if (lbl.includes('budget') || lbl.includes('2026')) { budRow = msData[rj]; break; }
+    }
+    if (!budRow) {
+      // fallback: next row
+      budRow = msData[ri+1] || [];
+    }
+
+    const n = v => { const x = parseFloat(v); return isNaN(x) ? 0 : x; };
+    const occ   = n(budRow[0]);
+    const bRns  = Math.round(n(budRow[2]));
+    const bADR  = Math.round(n(budRow[3]));
+    const pRns  = Math.round(n(budRow[5]));
+    const pADR  = Math.round(n(budRow[6]));
+    const cRns  = Math.round(n(budRow[8]) + n(budRow[11]));
+    const cADR  = Math.round(n(budRow[9]) || n(budRow[12]));
+    const tRns  = Math.round(n(budRow[14]));
+    const tRev  = Math.round(n(budRow[16]));
+
+    newMonthly.push({
+      m:     month,
+      occ:   occ,
+      bRns:  bRns,  bADR: bADR,  bRev: Math.round(bRns * bADR),
+      pRns:  pRns,  pADR: pADR,  pRev: Math.round(pRns * pADR),
+      cRns:  cRns,  cADR: cADR,  cRev: Math.round(cRns * cADR),
+      tRns:  tRns || (bRns + pRns + cRns),
+      tRev:  tRev,
+      peak:  PEAK_M.includes(month)
+    });
+  }
+
+  if (newMonthly.length < 6) {
+    warnings.push(`Only ${newMonthly.length} months parsed from MARKET SEGMENT sheet — expected 12. Some data may be missing.`);
+  }
+
+  // ── Parse REV PER ROOM → rate tables ──
+  const ROOM_TYPES_REF = ['Deluxe','Deluxe Premier','Studio Suite','One Bedroom Suite','Presidential Suite'];
+  const newRates = { BAR:{segAve:0}, PKG:{segAve:0}, GRP:{segAve:0} };
+
+  // Scan rows for BAR, PACKAGES/PROMOTIONS, CORPORATE/GROUP sections
+  let curCat = null;
+  for (let ri = 0; ri < rprData.length; ri++) {
+    const c0 = String(rprData[ri][0] || '').trim().toUpperCase();
+    const c1 = String(rprData[ri][1] || '').trim().toUpperCase();
+
+    // Detect section headers
+    if (c0 === 'BAR') { curCat = 'BAR'; continue; }
+    if (c0.includes('PACKAGE') || c0.includes('PROMOTION')) { curCat = 'PKG'; continue; }
+    if (c0.includes('CORPORATE') || c0.includes('GROUP')) { curCat = 'GRP'; continue; }
+
+    // Detect "Ave Rate for XXX Segment"
+    if (c0.includes('AVE') && c0.includes('RATE') && curCat) {
+      const segAve = parseFloat(rprData[ri][6]) || parseFloat(rprData[ri][3]) || 0;
+      if (segAve) newRates[curCat].segAve = Math.round(segAve);
+      continue;
+    }
+
+    if (!curCat) continue;
+
+    // Try to match room type in col 0
+    const rtMatch = ROOM_TYPES_REF.find(rt => {
+      const normalized = c0.replace(/\s+/g,' ').replace('ONE BEDROOM','ONE BEDROOM');
+      return normalized.includes(rt.toUpperCase().substring(0,6)) || c0.includes(rt.toUpperCase().substring(0,8));
+    });
+
+    if (rtMatch) {
+      const n = v => { const x = parseFloat(v); return isNaN(x) ? 0 : x; };
+      const peak = Math.round(n(rprData[ri][4]));
+      const lean = Math.round(n(rprData[ri][5]));
+      const ave  = Math.round(n(rprData[ri][6]));
+      if (peak || lean || ave) {
+        newRates[curCat][rtMatch] = { Peak: peak||lean, Lean: lean||peak, Ave: ave||(peak+lean)/2 };
+      }
+    }
+  }
+
+  // Validate we got at least some rates
+  const rateCount = Object.values(newRates).reduce((s,c) => s + Object.keys(c).filter(k=>k!=='segAve').length, 0);
+  if (rateCount < 5) {
+    warnings.push(`Only ${rateCount} rate entries parsed from REV PER ROOM sheet — some room type rates may be missing.`);
+  }
+
+  // ── Apply parsed data ──
+  const finalMonthly = newMonthly.length >= 6 ? newMonthly : DEFAULT_MONTHLY_REF.map(r=>({...r}));
+  MONTHLY_REF    = finalMonthly;
+  RATE_TABLE_REF = newRates;
+  refFileName    = fileName;
+  refIsCustom    = true;
+
+  // Update the global RATE_TABLE dropdown data too
+  updateGlobalRatesFromRef(newRates);
+
+  // Re-render everything
+  renderBudgetRef();
+  renderRefStatTiles();
+  renderRefRateTables();
+
+  // Update UI state
+  document.getElementById('ref-source-label').textContent = fileName;
+  document.getElementById('ref-source-label').style.color = 'var(--v-green)';
+  document.getElementById('ref-reset-btn').style.display  = 'inline-flex';
+  document.getElementById('ref-upload-zone').style.display = 'none';
+
+  // Show status
+  const warnHtml = warnings.length ? `<br><div class="warn-box" style="margin-top:10px">⚠ ${warnings.join('<br>')}</div>` : '';
+  statusEl.innerHTML = `<div class="ok-box">
+    ✓ <strong>${fileName}</strong> successfully parsed — 
+    ${finalMonthly.length} months loaded, ${rateCount} rate entries updated.
+    ${warnHtml}
+  </div>`;
+
+  toast(`✓ Reference data updated from ${fileName}`);
+}
+
+// ─── UPDATE GLOBAL RATES DROPDOWN ───
+function updateGlobalRatesFromRef(newRates) {
+  // Re-sync RATE_TABLE array used by SKU form and USE modal dropdowns
+  const catMap = {BAR:'BAR', PKG:'PKG', GRP:'GRP'};
+  const roomTypes = ['Deluxe','Deluxe Premier','Studio Suite','One Bedroom Suite','Presidential Suite'];
+  roomTypes.forEach(room => {
+    ['BAR','PKG','GRP'].forEach(cat => {
+      const r = newRates[cat]?.[room];
+      if (!r) return;
+      // Update RATE_TABLE entries
+      RATE_TABLE.forEach(entry => {
+        if (entry.cat===cat && entry.room===room) {
+          if (entry.type==='peak') entry.value = r.Peak || entry.value;
+          if (entry.type==='lean') entry.value = r.Lean || entry.value;
+          if (entry.type==='ave')  entry.value = r.Ave  || entry.value;
+          entry.label = entry.label.replace(/₱[\d,]+/, ''); // strip old value from label
+        }
+      });
+      // Update RATES lookup
+      if (!RATES[cat]) RATES[cat] = {};
+      RATES[cat][room] = { Peak: r.Peak, Lean: r.Lean, Ave: r.Ave };
+    });
+  });
+}
+
+// ─── RESET TO DEFAULT ───
+function resetRefData() {
+  if (!confirm('Reset to built-in default 2026 budget data? Any uploaded data will be discarded.')) return;
+  MONTHLY_REF    = DEFAULT_MONTHLY_REF.map(r=>({...r}));
+  RATE_TABLE_REF = JSON.parse(JSON.stringify(DEFAULT_RATE_TABLE_REF));
+  refFileName    = 'Default (VERMILLION_FORECAST_2026.xls)';
+  refIsCustom    = false;
+
+  // Restore global RATE_TABLE values
+  RATE_TABLE.forEach(entry => {
+    const r = DEFAULT_RATE_TABLE_REF[entry.cat]?.[entry.room];
+    if (!r) return;
+    if (entry.type==='peak') entry.value = r.Peak;
+    if (entry.type==='lean') entry.value = r.Lean;
+    if (entry.type==='ave')  entry.value = r.Ave;
+  });
+  Object.keys(DEFAULT_RATE_TABLE_REF).forEach(cat => {
+    RATES[cat] = {};
+    const roomTypes = ['Deluxe','Deluxe Premier','Studio Suite','One Bedroom Suite','Presidential Suite'];
+    roomTypes.forEach(room => {
+      if (DEFAULT_RATE_TABLE_REF[cat][room]) RATES[cat][room] = {...DEFAULT_RATE_TABLE_REF[cat][room]};
+    });
+  });
+
+  document.getElementById('ref-source-label').textContent = 'Default';
+  document.getElementById('ref-source-label').style.color = 'var(--v-gold-dim)';
+  document.getElementById('ref-reset-btn').style.display  = 'none';
+  document.getElementById('ref-parse-status').style.display = 'none';
+  renderBudgetRef();
+  renderRefStatTiles();
+  renderRefRateTables();
+  toast('Reference data reset to default.');
+}
+
+// ─── RENDER STAT TILES ───
+function renderRefStatTiles() {
+  const totalRns = MONTHLY_REF.reduce((s,m)=>s+m.tRns,0);
+  const totalRev = MONTHLY_REF.reduce((s,m)=>s+m.tRev,0);
+  const avgOcc   = MONTHLY_REF.reduce((s,m)=>s+m.occ,0) / MONTHLY_REF.length;
+  const avgAdr   = totalRns > 0 ? totalRev / totalRns : 0;
+  const revpar   = totalRev / (98 * 365);
+  document.getElementById('ref-stat-rns').textContent   = Number(totalRns).toLocaleString();
+  document.getElementById('ref-stat-occ').textContent   = (avgOcc*100).toFixed(1)+'% avg occupancy';
+  document.getElementById('ref-stat-rev').textContent   = '₱'+(totalRev/1e6).toFixed(1)+'M';
+  document.getElementById('ref-stat-adr').textContent   = 'Avg ADR ₱'+Math.round(avgAdr).toLocaleString();
+  document.getElementById('ref-stat-revpar').textContent= '₱'+Math.round(revpar).toLocaleString();
+}
+
+// ─── RENDER RATE TABLES (dynamic) ───
+function renderRefRateTables() {
+  const roomTypes = ['Deluxe','Deluxe Premier','Studio Suite','One Bedroom Suite','Presidential Suite'];
+  const roomCounts = {'Deluxe':48,'Deluxe Premier':41,'Studio Suite':3,'One Bedroom Suite':5,'Presidential Suite':1};
+  const roomOcc    = {'Deluxe':'63%','Deluxe Premier':'53%','Studio Suite':'30%','One Bedroom Suite':'20%','Presidential Suite':'15%'};
+
+  ['BAR','PKG','GRP'].forEach(cat => {
+    const tbId = `ref-rate-tbody-${cat.toLowerCase()}`;
+    const tbody = document.getElementById(tbId);
+    if (!tbody) return;
+    const seg = RATE_TABLE_REF[cat] || {};
+    tbody.innerHTML = roomTypes.map(room => {
+      const r = seg[room] || {Peak:'—',Lean:'—',Ave:'—'};
+      const fmt2 = v => typeof v==='number' ? v.toLocaleString() : v;
+      return `<tr>
+        <td><strong>${room}</strong></td>
+        <td class="mono">${roomCounts[room]}</td>
+        <td class="mono">${fmt2(r.Peak)}</td>
+        <td class="mono">${fmt2(r.Lean)}</td>
+        <td class="mono">${fmt2(r.Ave)}</td>
+      </tr>`;
+    }).join('') + `<tr style="background:var(--v-cream);font-weight:600">
+        <td colspan="2"><em>Segment Average</em></td>
+        <td class="mono">—</td><td class="mono">—</td>
+        <td class="mono">${seg.segAve ? seg.segAve.toLocaleString() : '—'}</td>
+      </tr>`;
+  });
+
+  // Consolidated table
+  const ctbody = document.getElementById('ref-consol-tbody');
+  if (ctbody) {
+    const bar = RATE_TABLE_REF.BAR || {}; const pkg = RATE_TABLE_REF.PKG || {}; const grp = RATE_TABLE_REF.GRP || {};
+    const occArr = {'Deluxe':'63%','Deluxe Premier':'53%','Studio Suite':'30%','One Bedroom Suite':'20%','Presidential Suite':'15%'};
+    ctbody.innerHTML = roomTypes.map(room => {
+      const b = bar[room]||{}; const p = pkg[room]||{}; const g = grp[room]||{};
+      const f = v => typeof v==='number' ? '₱'+v.toLocaleString() : '—';
+      const consol = (b.Ave && p.Ave && g.Ave) ? Math.round((b.Ave+p.Ave+g.Ave)/3) : null;
+      return `<tr>
+        <td><strong>${room}</strong></td>
+        <td class="mono">${roomCounts[room]}</td>
+        <td class="mono">${occArr[room]}</td>
+        <td class="mono">${f(b.Peak)}</td><td class="mono">${f(b.Lean)}</td><td class="mono">${f(b.Ave)}</td>
+        <td class="mono">${f(p.Peak)}</td><td class="mono">${f(p.Lean)}</td><td class="mono">${f(p.Ave)}</td>
+        <td class="mono">${f(g.Peak)}</td><td class="mono">${f(g.Lean)}</td><td class="mono">${f(g.Ave)}</td>
+        <td class="mono fw6 text-red">${consol ? '₱'+consol.toLocaleString() : '—'}</td>
+      </tr>`;
+    }).join('') + `<tr style="background:var(--v-cream)">
+        <td colspan="3"><strong>Segment Average</strong></td>
+        <td colspan="2"></td><td class="mono fw6">₱${(bar.segAve||0).toLocaleString()}</td>
+        <td colspan="2"></td><td class="mono fw6">₱${(pkg.segAve||0).toLocaleString()}</td>
+        <td colspan="2"></td><td class="mono fw6">₱${(grp.segAve||0).toLocaleString()}</td>
+        <td class="mono fw6 text-red">₱${Math.round(((bar.segAve||0)+(pkg.segAve||0)+(grp.segAve||0))/3).toLocaleString()}</td>
+      </tr>`;
+  }
+}
+
+function renderBudgetRef() {
+  const tbody = document.getElementById('ref-monthly-body');
+  if (!tbody) return;
+  const fmt2  = n => '₱' + Number(Math.round(n)||0).toLocaleString('en-PH');
+  const fmtN2 = n => Number(Math.round(n)||0).toLocaleString();
+  tbody.innerHTML = MONTHLY_REF.map(m => `
+    <tr>
+      <td><strong>${m.m}</strong></td>
+      <td><span class="badge ${m.peak ? 'b-peak' : 'b-lean'}">${m.peak ? 'Peak' : 'Lean'}</span></td>
+      <td class="mono">${(m.occ*100).toFixed(1)}%</td>
+      <td class="mono">${fmtN2(m.bRns)}</td>
+      <td class="mono">${fmt2(m.bADR)}</td>
+      <td class="mono">${fmt2(m.bRev)}</td>
+      <td class="mono">${fmtN2(m.pRns)}</td>
+      <td class="mono">${fmt2(m.pADR)}</td>
+      <td class="mono">${fmt2(m.pRev)}</td>
+      <td class="mono">${fmtN2(m.cRns)}</td>
+      <td class="mono">${fmt2(m.cADR)}</td>
+      <td class="mono">${fmt2(m.cRev)}</td>
+      <td class="mono fw6">${fmtN2(m.tRns)}</td>
+      <td class="mono fw6" style="color:var(--v-red)">${fmt2(m.tRev)}</td>
+    </tr>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+onSkuFormChange();
+renderDashboard();
+renderSkuMiniTable();
+renderSkuFormRef();
+renderBudgetRef();
+renderRefStatTiles();
+renderRefRateTables();
+
+// ─── DRAG AND DROP for upload zone ───
+(function() {
+  const zone = document.getElementById('ref-upload-zone');
+  if (!zone) return;
+  ['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.style.background='var(--v-cream-dark)'; zone.style.borderColor='var(--v-red)'; }));
+  ['dragleave','dragend'].forEach(ev => zone.addEventListener(ev, () => { zone.style.background='var(--v-cream)'; zone.style.borderColor='var(--v-gold)'; }));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.style.background='var(--v-cream)'; zone.style.borderColor='var(--v-gold)';
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    const fakeInput = { files:[file] };
+    handleRefUpload(fakeInput);
+  });
+})();
+
+// ─── Upload button also shows zone ───
+document.querySelector('button[onclick*="ref-file-input"]')?.addEventListener('click', () => {
+  const z = document.getElementById('ref-upload-zone');
+  if (z) z.style.display = z.style.display === 'none' ? 'block' : 'none';
+});
+
+</script>
+</body>
+</html>
