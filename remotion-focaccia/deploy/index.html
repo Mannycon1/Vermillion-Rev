@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aboitiz Focaccia — Remotion Animation</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Georgia', serif;
+      color: #e8e0d4;
+    }
+    .container {
+      width: 100%;
+      max-width: 960px;
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+    .label {
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #8a7f72;
+    }
+    h1 {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: #e8e0d4;
+      text-align: center;
+    }
+    #player-container {
+      width: 100%;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      background: #111;
+    }
+    canvas {
+      width: 100%;
+      display: block;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 8px;
+    }
+    .controls button {
+      background: rgba(138, 127, 114, 0.2);
+      border: 1px solid #8a7f72;
+      color: #e8e0d4;
+      padding: 8px 20px;
+      font-family: 'Georgia', serif;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.2s;
+    }
+    .controls button:hover {
+      background: rgba(138, 127, 114, 0.4);
+    }
+    .footer {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: #4a4540;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <span class="label">Remotion Animation</span>
+    <h1>Aboitiz &mdash; Focaccia</h1>
+    <div id="player-container">
+      <canvas id="canvas" width="1920" height="1080"></canvas>
+    </div>
+    <div class="controls">
+      <button id="playBtn">Play</button>
+      <button id="replayBtn">Replay</button>
+    </div>
+    <span class="footer">Artisan Bread &bull; Crafted with Care</span>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const FPS = 30;
+    const TOTAL_FRAMES = 300;
+    let currentFrame = 0;
+    let animationId = null;
+    let playing = false;
+    let lastTime = 0;
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function interpolate(frame, inputRange, outputRange, clamp) {
+      let t;
+      if (frame <= inputRange[0]) return clamp ? outputRange[0] : outputRange[0];
+      if (frame >= inputRange[inputRange.length - 1]) return clamp ? outputRange[outputRange.length - 1] : outputRange[outputRange.length - 1];
+
+      for (let i = 0; i < inputRange.length - 1; i++) {
+        if (frame >= inputRange[i] && frame <= inputRange[i + 1]) {
+          t = (frame - inputRange[i]) / (inputRange[i + 1] - inputRange[i]);
+          return outputRange[i] + t * (outputRange[i + 1] - outputRange[i]);
+        }
+      }
+      return outputRange[outputRange.length - 1];
+    }
+
+    function interpolateEased(frame, inputRange, outputRange, easeFn) {
+      if (frame <= inputRange[0]) return outputRange[0];
+      if (frame >= inputRange[inputRange.length - 1]) return outputRange[outputRange.length - 1];
+
+      for (let i = 0; i < inputRange.length - 1; i++) {
+        if (frame >= inputRange[i] && frame <= inputRange[i + 1]) {
+          let t = (frame - inputRange[i]) / (inputRange[i + 1] - inputRange[i]);
+          t = easeFn(t);
+          return outputRange[i] + t * (outputRange[i + 1] - outputRange[i]);
+        }
+      }
+      return outputRange[outputRange.length - 1];
+    }
+
+    function drawFocaccia(ctx, cx, cy, scale) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(scale, scale);
+
+      // Bread base
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 180, 110, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#C8943E';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.ellipse(0, -5, 175, 105, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#D4A54A';
+      ctx.fill();
+
+      // Top crust
+      ctx.beginPath();
+      ctx.ellipse(0, -15, 165, 95, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#DCBA6A';
+      ctx.fill();
+
+      // Olive oil dimples
+      const dimples = [
+        [-70, -30, 18, 14], [0, -50, 15, 12], [70, -25, 20, 13],
+        [-40, 10, 16, 11], [40, 5, 17, 12], [-15, -20, 12, 10],
+        [95, 10, 13, 10], [-90, 5, 14, 11]
+      ];
+      dimples.forEach(([dx, dy, rx, ry]) => {
+        ctx.beginPath();
+        ctx.ellipse(dx, dy, rx, ry, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(200, 148, 62, 0.55)';
+        ctx.fill();
+      });
+
+      // Rosemary sprigs
+      ctx.strokeStyle = '#5A7A3A';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(-60, -42); ctx.lineTo(-25, -55); ctx.stroke();
+      const leaves1 = [[-50, -46], [-42, -49], [-34, -53]];
+      leaves1.forEach(([lx, ly]) => {
+        ctx.beginPath();
+        ctx.ellipse(lx, ly, 5, 2.5, -0.35, 0, Math.PI * 2);
+        ctx.fillStyle = '#6B8C4A';
+        ctx.fill();
+      });
+
+      ctx.beginPath(); ctx.moveTo(30, -10); ctx.lineTo(65, -22); ctx.stroke();
+      const leaves2 = [[40, -13], [48, -16], [56, -19]];
+      leaves2.forEach(([lx, ly]) => {
+        ctx.beginPath();
+        ctx.ellipse(lx, ly, 5, 2.5, -0.25, 0, Math.PI * 2);
+        ctx.fillStyle = '#6B8C4A';
+        ctx.fill();
+      });
+
+      // Sea salt
+      const salts = [[-45, -10, 2], [10, -35, 1.5], [50, -5, 2], [-25, -45, 1.5], [80, -10, 1.8], [-75, -10, 1.5], [20, 15, 2]];
+      salts.forEach(([sx, sy, sr]) => {
+        ctx.beginPath();
+        ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(240, 237, 232, 0.65)';
+        ctx.fill();
+      });
+
+      // Shadow
+      ctx.beginPath();
+      ctx.ellipse(0, 95, 160, 20, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function renderFrame(frame) {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // End fade
+      const endFade = interpolate(frame, [TOTAL_FRAMES - 30, TOTAL_FRAMES], [1, 0], true);
+      ctx.globalAlpha = endFade;
+
+      // Background
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(0, 0, w, h);
+
+      // Radial gradient
+      const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.5);
+      grad.addColorStop(0, 'rgba(60, 45, 25, 0.3)');
+      grad.addColorStop(1, 'rgba(10, 10, 10, 1)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Bread animations
+      const breadOpacity = interpolate(frame, [0, 20], [0, 1], true);
+      const breadScale = interpolateEased(frame, [0, 15, 90], [3.5, 3.2, 1.0], easeOutCubic);
+      const breadY = interpolateEased(frame, [0, 90, 120], [0, -80, -80], easeOutCubic);
+
+      // Glow
+      const glowOpacity = frame > 120
+        ? interpolate(Math.sin((frame - 120) * 0.05), [-1, 1], [0, 0.15], true)
+        : 0;
+
+      // Draw glow
+      if (breadOpacity > 0) {
+        const glowGrad = ctx.createRadialGradient(w/2, h/2 + breadY, 0, w/2, h/2 + breadY, 250 * breadScale);
+        glowGrad.addColorStop(0, `rgba(200, 148, 62, ${(glowOpacity + breadOpacity * 0.3) * 0.3})`);
+        glowGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = glowGrad;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      // Draw bread
+      ctx.globalAlpha = endFade * breadOpacity;
+      drawFocaccia(ctx, w/2, h/2 + breadY, breadScale);
+      ctx.globalAlpha = endFade;
+
+      // Decorative line
+      const lineWidth = interpolateEased(frame, [90, 130], [0, 200], easeOutCubic);
+      if (lineWidth > 0) {
+        const lineGrad = ctx.createLinearGradient(w/2 - lineWidth/2, 0, w/2 + lineWidth/2, 0);
+        lineGrad.addColorStop(0, 'transparent');
+        lineGrad.addColorStop(0.5, 'rgba(138, 127, 114, 0.5)');
+        lineGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = lineGrad;
+        ctx.fillRect(w/2 - lineWidth/2, h/2 + breadY + 170, lineWidth, 1);
+      }
+
+      // Label
+      const labelOpacity = interpolate(frame, [80, 105], [0, 1], true);
+      ctx.globalAlpha = endFade * labelOpacity;
+      ctx.fillStyle = '#8a7f72';
+      ctx.font = '14px Georgia';
+      ctx.textAlign = 'center';
+      ctx.letterSpacing = '4px';
+      ctx.fillText('V I D E O', w/2, h/2 + breadY - 200);
+
+      // Title
+      const titleOpacity = interpolate(frame, [60, 85], [0, 1], true);
+      const titleY = interpolateEased(frame, [60, 85], [30, 0], easeOutCubic);
+      ctx.globalAlpha = endFade * titleOpacity;
+      ctx.fillStyle = '#e8e0d4';
+      ctx.font = '48px Georgia';
+      ctx.textAlign = 'center';
+      ctx.fillText('Aboitiz — Focaccia', w/2, h/2 + breadY + 210 + titleY);
+
+      // Footer
+      const footerOpacity = interpolate(frame, [100, 125], [0, 1], true);
+      ctx.globalAlpha = endFade * footerOpacity;
+      ctx.fillStyle = '#4a4540';
+      ctx.font = '12px Georgia';
+      ctx.fillText('A R T I S A N   B R E A D  ·  C R A F T E D   W I T H   C A R E', w/2, h/2 + breadY + 250);
+
+      ctx.globalAlpha = 1;
+    }
+
+    function animate(timestamp) {
+      if (!playing) return;
+      if (!lastTime) lastTime = timestamp;
+      const delta = timestamp - lastTime;
+
+      if (delta >= 1000 / FPS) {
+        lastTime = timestamp;
+        renderFrame(currentFrame);
+        currentFrame++;
+        if (currentFrame >= TOTAL_FRAMES) {
+          playing = false;
+          document.getElementById('playBtn').textContent = 'Play';
+          return;
+        }
+      }
+      animationId = requestAnimationFrame(animate);
+    }
+
+    document.getElementById('playBtn').addEventListener('click', () => {
+      if (playing) {
+        playing = false;
+        cancelAnimationFrame(animationId);
+        document.getElementById('playBtn').textContent = 'Play';
+      } else {
+        playing = true;
+        lastTime = 0;
+        document.getElementById('playBtn').textContent = 'Pause';
+        animationId = requestAnimationFrame(animate);
+      }
+    });
+
+    document.getElementById('replayBtn').addEventListener('click', () => {
+      currentFrame = 0;
+      playing = true;
+      lastTime = 0;
+      document.getElementById('playBtn').textContent = 'Pause';
+      cancelAnimationFrame(animationId);
+      animationId = requestAnimationFrame(animate);
+    });
+
+    // Responsive canvas
+    function resizeCanvas() {
+      const container = document.getElementById('player-container');
+      const ratio = 1920 / 1080;
+      const w = container.clientWidth;
+      canvas.style.width = w + 'px';
+      canvas.style.height = (w / ratio) + 'px';
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Render first frame
+    renderFrame(0);
+  </script>
+</body>
+</html>
