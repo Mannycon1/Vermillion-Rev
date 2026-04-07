@@ -15,7 +15,7 @@ export const FocacciaVideo = () => {
       </Sequence>
 
       <Sequence from={INTRO_DURATION} durationInFrames={VIDEO_DURATION}>
-        <VideoSection src={staticFile('C0036_-_VIDEO_ABOITIZ_FOCCACIA.MP4')} />
+        <VideoSection src={staticFile('C0036_-_video_aboitiz_foccacia_low_res_2.mp4')} />
       </Sequence>
 
       <Sequence from={INTRO_DURATION + VIDEO_DURATION} durationInFrames={OUTRO_DURATION}>
