@@ -1,8 +1,8 @@
-import {AbsoluteFill, Video, useCurrentFrame, interpolate, Easing} from 'remotion';
+import {AbsoluteFill, OffthreadVideo, useCurrentFrame, interpolate, Easing} from 'remotion';
 
 export const VideoSection: React.FC<{src: string}> = ({src}) => {
   const frame = useCurrentFrame();
-  const totalFrames = 270;
+  const totalFrames = 210;
 
   // Fade in from black
   const fadeIn = interpolate(frame, [0, 20], [0, 1], {
@@ -32,7 +32,7 @@ export const VideoSection: React.FC<{src: string}> = ({src}) => {
           alignItems: 'center',
         }}
       >
-        <Video
+        <OffthreadVideo
           src={src}
           style={{
             width: '100%',

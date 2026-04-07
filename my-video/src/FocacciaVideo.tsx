@@ -4,7 +4,7 @@ import {VideoSection} from './VideoSection';
 import {Outro} from './Outro';
 
 const INTRO_DURATION = 90; // 3 seconds
-const VIDEO_DURATION = 270; // 9 seconds
+const VIDEO_DURATION = 210; // 7 seconds (matches source)
 const OUTRO_DURATION = 90; // 3 seconds
 
 export const FocacciaVideo = () => {
@@ -15,7 +15,7 @@ export const FocacciaVideo = () => {
       </Sequence>
 
       <Sequence from={INTRO_DURATION} durationInFrames={VIDEO_DURATION}>
-        <VideoSection src={staticFile('C0036_-_video_aboitiz_foccacia_low_res_2.mp4')} />
+        <VideoSection src={staticFile('focaccia.mp4')} />
       </Sequence>
 
       <Sequence from={INTRO_DURATION + VIDEO_DURATION} durationInFrames={OUTRO_DURATION}>
