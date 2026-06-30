@@ -71,6 +71,7 @@
   .cell.today .dnum{background:var(--primary);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
   .ev{font-size:11.5px;padding:3px 6px;border-radius:5px;cursor:pointer;border-left:3px solid #888;background:#f3f4f6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
   .ev:hover{filter:brightness(.96)}
+  .ev .evlab{color:var(--muted);font-style:italic}
   .ev.done{text-decoration:line-through;opacity:.6}
 
   /* Agenda */
@@ -92,6 +93,7 @@
   .st-onhold{background:#ede9fe;color:#6d28d9}
   .st-completed{background:#dcfce7;color:#15803d}
   .st-cancelled{background:#fee2e2;color:#b91c1c}
+  .st-done{background:#dcfce7;color:#15803d}
 
   /* Detail page */
   .overlay{position:fixed;inset:0;background:rgba(20,22,28,.45);z-index:50;display:none;overflow:auto;padding:28px 14px}
@@ -109,6 +111,16 @@
   .field .hint{font-size:11px;color:var(--muted);margin-top:4px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   @media(max-width:560px){.grid2{grid-template-columns:1fr}}
+
+  /* Milestones (Timeline) */
+  .ms-list{display:flex;flex-direction:column;gap:8px}
+  .ms-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .ms-row input[type=date]{width:158px;flex:0 0 auto}
+  .ms-row .ms-label{flex:1;min-width:150px}
+  .ms-done{border:1px solid var(--line);background:#fff;border-radius:7px;padding:9px 11px;cursor:pointer;font-size:12px;white-space:nowrap;color:var(--muted)}
+  .ms-done.on{background:#dcfce7;color:#15803d;border-color:#a7e3bd;font-weight:700}
+  .ms-del{border:none;background:none;color:#b91c1c;cursor:pointer;font-size:15px;padding:6px 8px;border-radius:6px;line-height:1}
+  .ms-del:hover{background:#fee2e2}
 
   .status-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .status-pill{font-size:11px;padding:3px 10px;border-radius:12px;font-weight:700}
@@ -196,7 +208,7 @@
   <div class="print-head" id="printHead"></div>
 
   <div id="unschedWrap" style="display:none">
-    <div class="section-label">Unscheduled <span class="lite">— set a date to place these on the calendar</span></div>
+    <div class="section-label">Unscheduled <span class="lite">— add a date to place these on the calendar</span></div>
     <div class="ongoing" id="unscheduled"></div>
   </div>
 
@@ -224,7 +236,8 @@
 //---------------------------------------------------------------------------
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const WD_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const STORAGE_KEY = "vermillion_calendar_v2";
+const STORAGE_KEY = "vermillion_calendar_v3";
+const OLD_KEYS = ["vermillion_calendar_v2","vermillion_calendar_v1"];
 const STATUSES = ["Not Started","Planning","In Progress","On Hold","Completed","Cancelled"];
 const statusClass = s => "st-" + (s||"Not Started").toLowerCase().replace(/[^a-z]/g,"");
 
@@ -239,7 +252,7 @@ const CAT_COLORS = {
 const catColor = c => CAT_COLORS[c] || "#6b7280";
 
 //---------------------------------------------------------------------------
-// Date helpers (ISO yyyy-mm-dd as source of truth)
+// Date helpers (ISO yyyy-mm-dd)
 //---------------------------------------------------------------------------
 const pad2 = n => String(n).padStart(2,"0");
 const iso = (y,m,d) => `${y}-${pad2(m)}-${pad2(d)}`;
@@ -256,23 +269,28 @@ function fmtLong(s){
 }
 function daysInMonth(y,m){ return new Date(y,m,0).getDate(); }
 
+// Activity date helpers (each activity owns a list of milestone dates)
+function validDates(it){ return (it.dates||[]).map(m=>m.date).filter(d=>parseISO(d)).sort(); }
+function firstDate(it){ const v=validDates(it); return v.length?v[0]:null; }
+function hasDate(it){ return validDates(it).length>0; }
+function dateSummary(it){
+  const v = validDates(it);
+  if(!v.length) return "No dates set";
+  if(v.length===1) return fmtLong(v[0]);
+  return `${fmtLong(v[0])}  (+${v.length-1} more date${v.length-1>1?'s':''})`;
+}
+
 //---------------------------------------------------------------------------
 // Seed data — transcribed from marcomm CALENDAR OF ACTIVITIES.docx
-// Each activity carries a real calendar date. Items given a fixed date below
-// keep it; the rest are spread across their listed month (you can change any
-// date with the Timeline date-picker on the activity's page).
 //---------------------------------------------------------------------------
 function seedData(){
   let n = 0;
   const mk = (month, category, title, date, details) => ({
     id: "a" + (++n),
-    month,            // listed month (1-12) — used only to spread undated items
-    category, title,
-    date: date || null,
-    description: "",
-    details: details || "",
-    status: "Not Started",
-    comments: []
+    month, category, title,
+    dates: date ? [{ id:"m"+(++n), date, label:"", done:false }] : [],
+    description: "", details: details || "",
+    status: "Not Started", comments: []
   });
   const items = [
     // ---- JULY (7) ----
@@ -394,15 +412,15 @@ function seedData(){
   return items;
 }
 
-// Give every still-undated item a real date, spread evenly across its month.
+// Give every still-undated item one real date, spread evenly across its month.
 function spreadUndated(items){
   const groups = {};
-  items.forEach(it => { if(!it.date){ (groups[it.month] = groups[it.month] || []).push(it); } });
+  items.forEach(it => { if(!hasDate(it)){ (groups[it.month] = groups[it.month] || []).push(it); } });
   Object.keys(groups).forEach(mk => {
     const M = +mk, list = groups[mk], dim = daysInMonth(2026, M), n = list.length;
     list.forEach((it, k) => {
       const day = Math.min(dim, Math.max(1, Math.round((k+1) * dim / (n+1))));
-      it.date = iso(2026, M, day);
+      it.dates = [{ id: uid(), date: iso(2026, M, day), label:"", done:false }];
     });
   });
 }
@@ -413,17 +431,42 @@ function spreadUndated(items){
 let state = { items: [] };
 let view = { y: 2026, m0: 6 }; // July 2026
 
+function uid(){ return "m" + Math.random().toString(36).slice(2,9); }
+function byId(id){ return state.items.find(i => i.id === id); }
+
+// Make any item conform to the milestone schema (handles older single-date data)
+function normalizeItem(i){
+  const it = Object.assign({ id: "a"+Math.random().toString(36).slice(2,9), category:"EVENTS", title:"Untitled",
+    description:"", details:"", status:"Not Started", comments:[] }, i);
+  if(Array.isArray(i.dates)){
+    it.dates = i.dates.filter(Boolean).map(m => ({
+      id: m.id || uid(), date: (m.date||"")+"", label: m.label||"", done: !!m.done
+    }));
+  } else if(i.date){                          // migrate v2 single date
+    it.dates = [{ id: uid(), date: i.date+"", label:"", done:false }];
+  } else {
+    it.dates = [];
+  }
+  delete it.date; delete it.timeline; delete it.day;
+  return it;
+}
+
 function load(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){ const p = JSON.parse(raw); if(p && Array.isArray(p.items)){ state = p; return; } }
+    if(raw){ const p = JSON.parse(raw); if(p && Array.isArray(p.items)){ state = {items:p.items.map(normalizeItem)}; return; } }
   }catch(e){}
+  // migrate from an older version if present
+  for(const k of OLD_KEYS){
+    try{
+      const raw = localStorage.getItem(k);
+      if(raw){ const p = JSON.parse(raw); if(p && Array.isArray(p.items)){ state = {items:p.items.map(normalizeItem)}; save(); return; } }
+    }catch(e){}
+  }
   state = { items: seedData() };
   save();
 }
 function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
-function uid(){ return "a" + Math.random().toString(36).slice(2,9); }
-function byId(id){ return state.items.find(i => i.id === id); }
 
 //---------------------------------------------------------------------------
 // Misc helpers
@@ -438,16 +481,25 @@ function toast(msg){
   t.textContent = msg; t.classList.add('show');
   clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove('show'),1900);
 }
-function itemsInView(){
-  return state.items.filter(i => { const p = parseISO(i.date); return p && p.y===view.y && p.m===view.m0+1; });
+
+// every (activity, milestone) that falls in the current month
+function occurrencesInView(){
+  const out = [];
+  state.items.forEach(it => (it.dates||[]).forEach(ms => {
+    const p = parseISO(ms.date);
+    if(p && p.y===view.y && p.m===view.m0+1) out.push({ it, ms, day:p.d });
+  }));
+  return out;
 }
 
 //---------------------------------------------------------------------------
-// Month tabs (derived from the dates present in the data)
+// Month tabs (derived from all milestone dates in the data)
 //---------------------------------------------------------------------------
 function renderTabs(){
   const set = {};
-  state.items.forEach(i => { const p = parseISO(i.date); if(p){ set[`${p.y}-${pad2(p.m)}`] = {y:p.y, m0:p.m-1}; } });
+  state.items.forEach(i => (i.dates||[]).forEach(ms => {
+    const p = parseISO(ms.date); if(p){ set[`${p.y}-${pad2(p.m)}`] = {y:p.y, m0:p.m-1}; }
+  }));
   const months = Object.values(set).sort((a,b)=> a.y-b.y || a.m0-b.m0);
   const tabs = document.getElementById('tabs');
   tabs.innerHTML = months.map(mo => {
@@ -464,11 +516,11 @@ function renderTabs(){
 }
 
 //---------------------------------------------------------------------------
-// Unscheduled (only items with a missing/invalid date)
+// Unscheduled (activities with no valid date at all)
 //---------------------------------------------------------------------------
 function renderUnscheduled(){
   const wrap = document.getElementById('unschedWrap');
-  const list = state.items.filter(i => !parseISO(i.date))
+  const list = state.items.filter(i => !hasDate(i))
     .sort((a,b)=> a.category.localeCompare(b.category) || a.title.localeCompare(b.title));
   if(!list.length){ wrap.style.display = 'none'; return; }
   wrap.style.display = 'block';
@@ -481,7 +533,7 @@ function renderUnscheduled(){
 }
 
 //---------------------------------------------------------------------------
-// Calendar grid — every dated activity plotted on its day
+// Calendar grid — every milestone plotted on its day
 //---------------------------------------------------------------------------
 function renderGrid(){
   const grid = document.getElementById('grid');
@@ -491,15 +543,16 @@ function renderGrid(){
   const isThisMonth = today.getFullYear()===view.y && today.getMonth()===view.m0;
 
   const byDay = {};
-  itemsInView().forEach(i => { const d = parseISO(i.date).d; (byDay[d] = byDay[d]||[]).push(i); });
-  Object.values(byDay).forEach(a => a.sort((x,y)=> x.category.localeCompare(y.category) || x.title.localeCompare(y.title)));
+  occurrencesInView().forEach(o => { (byDay[o.day] = byDay[o.day]||[]).push(o); });
+  Object.values(byDay).forEach(a => a.sort((x,y)=> x.it.category.localeCompare(y.it.category) || x.it.title.localeCompare(y.it.title)));
 
   let cells = "";
   for(let p=0;p<startDow;p++) cells += `<div class="cell pad"></div>`;
   for(let d=1; d<=dim; d++){
-    const evs = (byDay[d]||[]).map(i =>
-      `<div class="ev ${i.status==='Completed'?'done':''}" data-id="${i.id}" style="border-left-color:${catColor(i.category)}" title="${esc(i.category)} — ${esc(i.title)}">${esc(i.title)}</div>`
-    ).join('');
+    const evs = (byDay[d]||[]).map(o => {
+      const lab = o.ms.label ? ` <span class="evlab">· ${esc(o.ms.label)}</span>` : "";
+      return `<div class="ev ${o.ms.done?'done':''}" data-id="${o.it.id}" style="border-left-color:${catColor(o.it.category)}" title="${esc(o.it.category)} — ${esc(o.it.title)}${o.ms.label?' ('+esc(o.ms.label)+')':''}">${esc(o.it.title)}${lab}</div>`;
+    }).join('');
     const todayCls = (isThisMonth && today.getDate()===d) ? ' today' : '';
     cells += `<div class="cell${todayCls}"><span class="dnum">${d}</span>${evs}</div>`;
   }
@@ -510,20 +563,24 @@ function renderGrid(){
 }
 
 //---------------------------------------------------------------------------
-// Agenda — date-sorted list for the month
+// Agenda — date-sorted list (one row per milestone in the month)
 //---------------------------------------------------------------------------
 function renderAgenda(){
   const el = document.getElementById('agenda');
-  const list = itemsInView().sort((a,b)=> parseISO(a.date).d - parseISO(b.date).d || a.title.localeCompare(b.title));
+  const list = occurrencesInView().sort((a,b)=> a.day-b.day || a.it.title.localeCompare(b.it.title));
   if(!list.length){ el.innerHTML = `<div class="empty">No activities this month.</div>`; return; }
-  el.innerHTML = list.map(i => {
-    const p = parseISO(i.date);
+  el.innerHTML = list.map(o => {
+    const p = parseISO(o.ms.date);
     const dt = new Date(p.y, p.m-1, p.d);
-    return `<div class="agenda-row" data-id="${i.id}">
+    const sub = o.it.category + (o.ms.label ? ` · ${o.ms.label}` : "");
+    const flag = o.ms.done
+      ? `<span class="sflag st-done">✓ Done</span>`
+      : `<span class="sflag ${statusClass(o.it.status)}">${esc(o.it.status)}</span>`;
+    return `<div class="agenda-row" data-id="${o.it.id}">
       <div class="adate"><div class="dd">${p.d}</div><div class="wd">${WD_SHORT[dt.getDay()]}</div></div>
-      <span class="cdot" style="background:${catColor(i.category)}"></span>
-      <div class="atitle">${esc(i.title)}<div class="acat">${esc(i.category)}</div></div>
-      <span class="sflag ${statusClass(i.status)}">${esc(i.status)}</span>
+      <span class="cdot" style="background:${catColor(o.it.category)}"></span>
+      <div class="atitle">${esc(o.it.title)}<div class="acat">${esc(sub)}</div></div>
+      ${flag}
     </div>`;
   }).join('');
   el.querySelectorAll('.agenda-row').forEach(r => r.onclick = () => openDetail(r.dataset.id));
@@ -538,7 +595,7 @@ let activeId = null;
 
 function openDetail(id){
   const it = byId(id); if(!it) return;
-  const p = parseISO(it.date); if(p){ view = {y:p.y, m0:p.m-1}; }
+  const p = parseISO(firstDate(it)); if(p){ view = {y:p.y, m0:p.m-1}; }
   activeId = id;
   location.hash = "activity/" + id;
   drawDetail();
@@ -551,6 +608,17 @@ function closeDetail(){
   activeId = null;
   if(location.hash.startsWith('#activity/')) history.replaceState(null,'',location.pathname+location.search);
   render();
+}
+
+function milestoneRowsHTML(it){
+  if(!it.dates.length) return `<div class="empty" style="padding:2px 0">No dates yet — add a milestone or completion date below.</div>`;
+  return it.dates.map(ms => `
+    <div class="ms-row" data-mid="${ms.id}">
+      <input type="date" class="ms-date" value="${esc(parseISO(ms.date)?ms.date:'')}">
+      <input type="text" class="ms-label" value="${esc(ms.label||'')}" placeholder="Label (e.g. Kickoff, Soft launch, Completion)">
+      <button class="ms-done ${ms.done?'on':''}" type="button">${ms.done?'✓ Done':'Mark done'}</button>
+      <button class="ms-del" type="button" title="Remove this date">✕</button>
+    </div>`).join('');
 }
 
 function drawDetail(){
@@ -574,7 +642,7 @@ function drawDetail(){
       <div>
         <div class="cat"><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${catColor(it.category)}"></span>${esc(it.category)}</div>
         <h2>${esc(it.title)}</h2>
-        <div class="mo" id="d_datelabel">${fmtLong(it.date)}</div>
+        <div class="mo" id="d_datelabel">${esc(dateSummary(it))}</div>
       </div>
       <button class="btn btn-ghost no-print" id="closeDetail" title="Close" style="font-size:20px">✕</button>
     </div>
@@ -595,18 +663,18 @@ function drawDetail(){
         <textarea id="f_details" placeholder="Logistics, owners, budget, venue, requirements…">${esc(it.details)}</textarea>
       </div>
 
-      <div class="grid2">
-        <div class="field">
-          <label>Timeline (date on calendar)</label>
-          <input type="date" id="f_date" value="${esc(parseISO(it.date)?it.date:'')}">
-          <div class="hint">Changing this moves the activity on the calendar.</div>
-        </div>
-        <div class="field">
-          <label>Status</label>
-          <div class="status-row">
-            <select id="f_status">${statusOpts}</select>
-            <span class="status-pill ${statusClass(it.status)}" id="statusPill">${esc(it.status)}</span>
-          </div>
+      <div class="field">
+        <label>Timeline — dates &amp; milestones</label>
+        <div class="ms-list" id="ms-list">${milestoneRowsHTML(it)}</div>
+        <div class="no-print" style="margin-top:10px"><button class="btn" id="addMilestone" type="button">＋ Add date</button></div>
+        <div class="hint">Add as many dates as you need (planning, milestones, completion). Each appears on the calendar; “Mark done” shows it as completed.</div>
+      </div>
+
+      <div class="field">
+        <label>Status (overall)</label>
+        <div class="status-row">
+          <select id="f_status">${statusOpts}</select>
+          <span class="status-pill ${statusClass(it.status)}" id="statusPill">${esc(it.status)}</span>
         </div>
       </div>
 
@@ -642,6 +710,31 @@ function flashSaved(){
   f.classList.add('show'); clearTimeout(flashSaved._t);
   flashSaved._t = setTimeout(()=>f.classList.remove('show'),1100);
 }
+function updateDateLabel(){
+  const it = byId(activeId); if(!it) return;
+  const el = document.getElementById('d_datelabel'); if(el) el.textContent = dateSummary(it);
+}
+
+function renderMilestoneList(){
+  const it = byId(activeId); if(!it) return;
+  document.getElementById('ms-list').innerHTML = milestoneRowsHTML(it);
+  wireMilestones();
+  updateDateLabel();
+}
+
+function wireMilestones(){
+  const it = byId(activeId); if(!it) return;
+  document.querySelectorAll('#ms-list .ms-row').forEach(row => {
+    const mid = row.dataset.mid;
+    const ms = it.dates.find(m => m.id === mid); if(!ms) return;
+    const dateEl = row.querySelector('.ms-date');
+    const labEl  = row.querySelector('.ms-label');
+    dateEl.addEventListener('change', () => { ms.date = dateEl.value || ""; save(); flashSaved(); updateDateLabel(); });
+    labEl.addEventListener('input', () => { ms.label = labEl.value; save(); flashSaved(); });
+    row.querySelector('.ms-done').onclick = () => { ms.done = !ms.done; save(); flashSaved(); renderMilestoneList(); };
+    row.querySelector('.ms-del').onclick = () => { it.dates = it.dates.filter(m => m.id !== mid); save(); renderMilestoneList(); };
+  });
+}
 
 function wireDetail(){
   const it = byId(activeId); if(!it) return;
@@ -661,13 +754,14 @@ function wireDetail(){
     document.querySelector('#page .cat .cdot').style.background = catColor(it.category);
     document.querySelector('#page .cat').lastChild.textContent = it.category;
   });
-  // Date drives the calendar placement
-  document.getElementById('f_date').addEventListener('change', e => {
-    it.date = e.target.value || null;       // empty -> unscheduled
-    save(); flashSaved();
-    document.getElementById('d_datelabel').textContent = fmtLong(it.date);
-    const p = parseISO(it.date); if(p){ view = {y:p.y, m0:p.m-1}; }
-  });
+
+  wireMilestones();
+  document.getElementById('addMilestone').onclick = () => {
+    it.dates.push({ id: uid(), date:"", label:"", done:false });
+    save(); renderMilestoneList();
+    const rows = document.querySelectorAll('#ms-list .ms-row');
+    const last = rows[rows.length-1]; if(last) last.querySelector('.ms-date').focus();
+  };
 
   document.getElementById('closeDetail').onclick = closeDetail;
   document.getElementById('closeDetail2').onclick = closeDetail;
@@ -711,8 +805,8 @@ function wireDetail(){
 //---------------------------------------------------------------------------
 function newActivity(){
   const it = {
-    id: uid(), category: "EVENTS", title: "New Activity",
-    date: iso(view.y, view.m0+1, 1),
+    id: "a"+Math.random().toString(36).slice(2,9), category: "EVENTS", title: "New Activity",
+    dates: [{ id: uid(), date: iso(view.y, view.m0+1, 1), label:"", done:false }],
     description: "", details: "", status: "Not Started", comments: []
   };
   state.items.push(it); save();
@@ -736,13 +830,20 @@ function exportJSON(){
 }
 function csvCell(v){ return '"' + String(v==null?'':v).replace(/"/g,'""') + '"'; }
 function exportCSV(){
-  const head = ["Date","Category","Activity","Status","Description","Details","Comments"];
-  const rows = state.items.slice().sort((a,b)=> String(a.date).localeCompare(String(b.date)) || a.title.localeCompare(b.title))
-    .map(i => [
-      i.date||"", i.category, i.title, i.status, i.description, i.details,
-      (i.comments||[]).map(c => `${c.who||'Note'} (${c.when||''}): ${c.text}`).join(" | ")
-    ].map(csvCell).join(","));
-  download('vermillion-calendar.csv', [head.map(csvCell).join(","), ...rows].join("\r\n"), 'text/csv');
+  const head = ["Date","Milestone","Done","Category","Activity","Status","Description","Details","Comments"];
+  const rows = [];
+  state.items.forEach(i => {
+    const commentStr = (i.comments||[]).map(c => `${c.who||'Note'} (${c.when||''}): ${c.text}`).join(" | ");
+    const dts = (i.dates||[]).filter(m => parseISO(m.date));
+    if(dts.length){
+      dts.forEach(m => rows.push([m.date, m.label||"", m.done?"Yes":"", i.category, i.title, i.status, i.description, i.details, commentStr]));
+    } else {
+      rows.push(["", "", "", i.category, i.title, i.status, i.description, i.details, commentStr]);
+    }
+  });
+  rows.sort((a,b)=> String(a[0]).localeCompare(String(b[0])) || String(a[4]).localeCompare(String(b[4])));
+  const body = rows.map(r => r.map(csvCell).join(","));
+  download('vermillion-calendar.csv', [head.map(csvCell).join(","), ...body].join("\r\n"), 'text/csv');
   toast('Spreadsheet downloaded');
 }
 function importJSON(file){
@@ -752,7 +853,7 @@ function importJSON(file){
       const p = JSON.parse(r.result);
       const items = Array.isArray(p) ? p : p.items;
       if(!Array.isArray(items)) throw new Error('bad');
-      state.items = items.map(i => Object.assign({id:uid(),comments:[],date:null,description:'',details:'',status:'Not Started'}, i));
+      state.items = items.map(normalizeItem);
       save(); render(); toast('Backup imported');
     }catch(e){ alert('Could not read that file — expected a calendar backup JSON.'); }
   };
