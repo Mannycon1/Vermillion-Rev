@@ -41,7 +41,6 @@
   .subbar{display:flex;align-items:center;gap:10px;padding:12px 22px;background:#fafbfc;border-bottom:1px solid var(--line);flex-wrap:wrap;position:sticky;top:63px;z-index:20}
   .nav-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:16px;line-height:1}
   .nav-btn:hover{background:#f0f1f4}
-  .nav-btn:disabled{opacity:.4;cursor:not-allowed}
   .month-title{font-size:18px;font-weight:700;min-width:190px}
   .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
   .tab{padding:6px 12px;border:1px solid var(--line);background:#fff;border-radius:20px;cursor:pointer;font-size:12.5px;color:var(--muted)}
@@ -50,27 +49,41 @@
 
   main{padding:18px 22px;max-width:1180px;margin:0 auto}
 
-  /* All-month / ongoing */
   .section-label{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin:4px 0 10px}
+  .section-label .lite{font-weight:400;text-transform:none;letter-spacing:0}
+
+  /* Unscheduled chips */
   .ongoing{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
   .chip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;box-shadow:var(--shadow);font-size:13px;max-width:100%}
   .chip:hover{transform:translateY(-1px);box-shadow:var(--shadow-lg)}
   .chip .cdot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
   .chip .ctxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .chip .sflag{font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600;white-space:nowrap}
 
   /* Calendar grid */
   .cal{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
   .dow{display:grid;grid-template-columns:repeat(7,1fr);background:#fafbfc;border-bottom:1px solid var(--line)}
   .dow div{padding:9px 8px;font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-align:center;text-transform:uppercase}
   .grid{display:grid;grid-template-columns:repeat(7,1fr)}
-  .cell{min-height:104px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px;position:relative;display:flex;flex-direction:column;gap:4px}
+  .cell{min-height:108px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px;position:relative;display:flex;flex-direction:column;gap:4px}
   .cell:nth-child(7n){border-right:none}
   .cell.pad{background:#fafbfc}
   .cell .dnum{font-size:12px;color:var(--muted);font-weight:600;align-self:flex-start}
   .cell.today .dnum{background:var(--primary);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
   .ev{font-size:11.5px;padding:3px 6px;border-radius:5px;cursor:pointer;border-left:3px solid #888;background:#f3f4f6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
   .ev:hover{filter:brightness(.96)}
+  .ev.done{text-decoration:line-through;opacity:.6}
+
+  /* Agenda */
+  .agenda{display:flex;flex-direction:column;gap:6px}
+  .agenda-row{display:flex;align-items:center;gap:11px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;box-shadow:var(--shadow)}
+  .agenda-row:hover{background:var(--primary-50)}
+  .agenda-row .adate{min-width:54px;text-align:center}
+  .agenda-row .adate .dd{font-size:16px;font-weight:700;line-height:1}
+  .agenda-row .adate .wd{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase}
+  .agenda-row .cdot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+  .agenda-row .atitle{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .agenda-row .acat{font-size:11px;color:var(--muted)}
+  .agenda-row .sflag{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;white-space:nowrap}
 
   /* Status flags */
   .st-notstarted{background:#eef0f3;color:#4b5563}
@@ -90,7 +103,7 @@
   .page-head .mo{color:var(--muted);font-size:12.5px;margin-top:5px}
   .page-body{padding:20px 22px;display:flex;flex-direction:column;gap:16px}
   .field label{display:block;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-  .field input[type=text],.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:14px;font-family:inherit;color:var(--text);background:#fff}
+  .field input[type=text],.field input[type=date],.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:14px;font-family:inherit;color:var(--text);background:#fff}
   .field textarea{resize:vertical;min-height:64px;line-height:1.5}
   .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-50)}
   .field .hint{font-size:11px;color:var(--muted);margin-top:4px}
@@ -156,6 +169,7 @@
   </div>
   <div class="actions">
     <button class="btn btn-primary" id="btnNew">＋ New Activity</button>
+    <button class="btn" id="btnToday">Today</button>
     <button class="btn" id="btnPrint">🖨 Print</button>
     <div class="menu" id="dlMenu">
       <button class="btn" id="btnDl">⬇ Download ▾</button>
@@ -181,14 +195,18 @@
 <main id="app">
   <div class="print-head" id="printHead"></div>
 
-  <div class="section-label">All-month &amp; ongoing activities <span style="font-weight:400;text-transform:none;letter-spacing:0">— click any item to open its page</span></div>
-  <div class="ongoing" id="ongoing"></div>
+  <div id="unschedWrap" style="display:none">
+    <div class="section-label">Unscheduled <span class="lite">— set a date to place these on the calendar</span></div>
+    <div class="ongoing" id="unscheduled"></div>
+  </div>
 
-  <div class="section-label">Scheduled dates</div>
   <div class="cal">
     <div class="dow"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
     <div class="grid" id="grid"></div>
   </div>
+
+  <div class="section-label" style="margin-top:20px">Agenda <span class="lite">— <span id="agendaMonth"></span> · click any activity to open its page</span></div>
+  <div class="agenda" id="agenda"></div>
 </main>
 
 <!-- Detail page overlay -->
@@ -204,14 +222,12 @@
 //---------------------------------------------------------------------------
 // Config
 //---------------------------------------------------------------------------
-const YEAR = 2026;                       // calendar spans Jul–Dec 2026
-const MONTHS = [6,7,8,9,10,11];          // 0-indexed: Jul..Dec
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-const STORAGE_KEY = "vermillion_calendar_v1";
+const WD_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const STORAGE_KEY = "vermillion_calendar_v2";
 const STATUSES = ["Not Started","Planning","In Progress","On Hold","Completed","Cancelled"];
 const statusClass = s => "st-" + (s||"Not Started").toLowerCase().replace(/[^a-z]/g,"");
 
-// Category accent colors
 const CAT_COLORS = {
   "CHRISTMAS CAMPAIGN":"#157347",
   "CAMPAIGN":"#1e6fd9",
@@ -223,22 +239,42 @@ const CAT_COLORS = {
 const catColor = c => CAT_COLORS[c] || "#6b7280";
 
 //---------------------------------------------------------------------------
+// Date helpers (ISO yyyy-mm-dd as source of truth)
+//---------------------------------------------------------------------------
+const pad2 = n => String(n).padStart(2,"0");
+const iso = (y,m,d) => `${y}-${pad2(m)}-${pad2(d)}`;
+function parseISO(s){
+  if(!s || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+  const [y,m,d] = s.split("-").map(Number);
+  if(m<1||m>12||d<1||d>31) return null;
+  return {y,m,d};
+}
+function fmtLong(s){
+  const p = parseISO(s); if(!p) return "No date";
+  const dt = new Date(p.y,p.m-1,p.d);
+  return `${WD_SHORT[dt.getDay()]}, ${MONTH_NAMES[p.m-1]} ${p.d}, ${p.y}`;
+}
+function daysInMonth(y,m){ return new Date(y,m,0).getDate(); }
+
+//---------------------------------------------------------------------------
 // Seed data — transcribed from marcomm CALENDAR OF ACTIVITIES.docx
-// month = 1..12 ; day = optional fixed day-of-month for scheduled items
+// Each activity carries a real calendar date. Items given a fixed date below
+// keep it; the rest are spread across their listed month (you can change any
+// date with the Timeline date-picker on the activity's page).
 //---------------------------------------------------------------------------
 function seedData(){
-  let id = 0;
-  const mk = (month, category, title, day, timeline) => ({
-    id: "a" + (++id),
-    month, category, title,
-    day: day || null,
+  let n = 0;
+  const mk = (month, category, title, date, details) => ({
+    id: "a" + (++n),
+    month,            // listed month (1-12) — used only to spread undated items
+    category, title,
+    date: date || null,
     description: "",
-    details: "",
-    timeline: timeline || "",
+    details: details || "",
     status: "Not Started",
     comments: []
   });
-  return [
+  const items = [
     // ---- JULY (7) ----
     mk(7,"CAMPAIGN","Pool Club Opening"),
     mk(7,"CAMPAIGN","Manu Opening"),
@@ -271,14 +307,14 @@ function seedData(){
     // ---- SEPTEMBER (9) ----
     mk(9,"CULINARY PROMOTION","Chinese Promotion (Luna – after ghost month)"),
     mk(9,"CULINARY PROMOTION","Family Menu / Offerings"),
-    mk(9,"EVENTS","Mooncake Festival",25,"Starts Sept 25"),
-    mk(9,"EVENTS","Mahjong Nights",25,"Starts Sept 25"),
+    mk(9,"EVENTS","Mooncake Festival","2026-09-25","Starts Sept 25."),
+    mk(9,"EVENTS","Mahjong Nights","2026-09-25","Starts Sept 25."),
     mk(9,"EVENTS","People of Iloilo"),
     mk(9,"EVENTS","Places of Iloilo"),
     mk(9,"EVENTS","Poolside / Manu Events"),
     mk(9,"EVENTS","Family Events"),
     mk(9,"ROOM PROMOTION","Mid-Autumn Festival (after ghost month)"),
-    mk(9,"ROOM PROMOTION","Flash Sale: 9/9",9,"September 9"),
+    mk(9,"ROOM PROMOTION","Flash Sale: 9/9","2026-09-09"),
     mk(9,"ROOM PROMOTION","Pool Club Membership Cards"),
     mk(9,"CAMPAIGN","Nostalgia (For Pool Club)"),
     mk(9,"CAMPAIGN","Pool Club Product / Image"),
@@ -297,8 +333,8 @@ function seedData(){
     mk(10,"EVENTS","Places of Iloilo"),
     mk(10,"EVENTS","Poolside / Manu Events"),
     mk(10,"EVENTS","Family Events"),
-    mk(10,"ROOM PROMOTION","Octoberfest Weekends (ends Oct 4)",4,"Weekends, ending Oct 4"),
-    mk(10,"ROOM PROMOTION","Flash Sale: 10/10",10,"October 10"),
+    mk(10,"ROOM PROMOTION","Octoberfest Weekends","2026-10-04","Weekends, ending Oct 4."),
+    mk(10,"ROOM PROMOTION","Flash Sale: 10/10","2026-10-10"),
     mk(10,"ROOM PROMOTION","Pool Club Membership Cards"),
     mk(10,"BANQUETS PROMOTION","Vermillion Events Launch"),
     mk(10,"CAMPAIGN","Nostalgia (For Vermillion Events)"),
@@ -310,17 +346,17 @@ function seedData(){
 
     // ---- NOVEMBER (11) ----
     mk(11,"CULINARY PROMOTION","Indian Festival (Luna)"),
-    mk(11,"CULINARY PROMOTION","Thanksgiving Dinner (Freddy's Night)"),
+    mk(11,"CULINARY PROMOTION","Thanksgiving Dinner (Freddy's Night)","2026-11-26"),
     mk(11,"CULINARY PROMOTION","Family Menu / Offerings"),
     mk(11,"EVENTS","Indian Music / Film Festival"),
-    mk(11,"EVENTS","Freddy's Night"),
+    mk(11,"EVENTS","Freddy's Night","2026-11-26"),
     mk(11,"EVENTS","Vermillion Events Tie-up Events"),
     mk(11,"EVENTS","People of Iloilo"),
     mk(11,"EVENTS","Places of Iloilo"),
     mk(11,"EVENTS","Poolside / Manu Events"),
     mk(11,"EVENTS","Family Events"),
-    mk(11,"ROOM PROMOTION","Halloween / Undas Promo",null,"Oct 30 – Nov 5"),
-    mk(11,"ROOM PROMOTION","Flash Sale: 11/11",11,"November 11"),
+    mk(11,"ROOM PROMOTION","Halloween / Undas Promo","2026-11-01","Runs Oct 30 – Nov 5."),
+    mk(11,"ROOM PROMOTION","Flash Sale: 11/11","2026-11-11"),
     mk(11,"ROOM PROMOTION","Balikbayan Promo"),
     mk(11,"ROOM PROMOTION","Pool Club Membership Cards"),
     mk(11,"CAMPAIGN","Nostalgia (For Vermillion Events)"),
@@ -331,16 +367,16 @@ function seedData(){
     mk(11,"CAMPAIGN","Hotel Family Imaging"),
 
     // ---- DECEMBER (12) ----
-    mk(12,"CHRISTMAS CAMPAIGN","Christmas Tree Lighting"),
+    mk(12,"CHRISTMAS CAMPAIGN","Christmas Tree Lighting","2026-12-01"),
     mk(12,"CHRISTMAS CAMPAIGN","Christmas Serenade Choir (Lobby)"),
-    mk(12,"CHRISTMAS CAMPAIGN","Misa de Gallo",null,"Dec 16 – 24"),
-    mk(12,"CHRISTMAS CAMPAIGN","Christmas Dinner",25,"December 25"),
-    mk(12,"CHRISTMAS CAMPAIGN","Christmas Brunch",25,"December 25"),
-    mk(12,"CHRISTMAS CAMPAIGN","New Year's Eve Count Down",31,"December 31"),
-    mk(12,"CHRISTMAS CAMPAIGN","New Year's Day Brunch",null,"January 1"),
+    mk(12,"CHRISTMAS CAMPAIGN","Misa de Gallo","2026-12-16","Dawn masses, Dec 16 – 24."),
+    mk(12,"CHRISTMAS CAMPAIGN","Christmas Dinner","2026-12-25"),
+    mk(12,"CHRISTMAS CAMPAIGN","Christmas Brunch","2026-12-25"),
+    mk(12,"CHRISTMAS CAMPAIGN","New Year's Eve Count Down","2026-12-31"),
+    mk(12,"CHRISTMAS CAMPAIGN","New Year's Day Brunch","2027-01-01"),
     mk(12,"CHRISTMAS CAMPAIGN","Christmas Hamper & Merchandise"),
     mk(12,"CHRISTMAS CAMPAIGN","Christmas Market"),
-    mk(12,"CHRISTMAS CAMPAIGN","12 Days of Christmas (Yang Saloon)"),
+    mk(12,"CHRISTMAS CAMPAIGN","12 Days of Christmas (Yang Saloon)","2026-12-14","Dec 14 – 25."),
     mk(12,"CHRISTMAS CAMPAIGN","Christmas Holidays Room Promotion"),
     mk(12,"ROOM PROMOTION","Dinagyang Promo Launch"),
     mk(12,"ROOM PROMOTION","Pool Club Membership Cards"),
@@ -354,13 +390,28 @@ function seedData(){
     mk(12,"CAMPAIGN","Hotel Branding Mood Board"),
     mk(12,"CAMPAIGN","Hotel Family Imaging")
   ];
+  spreadUndated(items);
+  return items;
+}
+
+// Give every still-undated item a real date, spread evenly across its month.
+function spreadUndated(items){
+  const groups = {};
+  items.forEach(it => { if(!it.date){ (groups[it.month] = groups[it.month] || []).push(it); } });
+  Object.keys(groups).forEach(mk => {
+    const M = +mk, list = groups[mk], dim = daysInMonth(2026, M), n = list.length;
+    list.forEach((it, k) => {
+      const day = Math.min(dim, Math.max(1, Math.round((k+1) * dim / (n+1))));
+      it.date = iso(2026, M, day);
+    });
+  });
 }
 
 //---------------------------------------------------------------------------
 // State + persistence
 //---------------------------------------------------------------------------
 let state = { items: [] };
-let curMonth = MONTHS[0]; // 0-indexed month
+let view = { y: 2026, m0: 6 }; // July 2026
 
 function load(){
   try{
@@ -370,14 +421,12 @@ function load(){
   state = { items: seedData() };
   save();
 }
-function save(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
-}
+function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
 function uid(){ return "a" + Math.random().toString(36).slice(2,9); }
 function byId(id){ return state.items.find(i => i.id === id); }
 
 //---------------------------------------------------------------------------
-// Helpers
+// Misc helpers
 //---------------------------------------------------------------------------
 function esc(s){ return (s==null?"":String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function nowStamp(){
@@ -389,74 +438,98 @@ function toast(msg){
   t.textContent = msg; t.classList.add('show');
   clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove('show'),1900);
 }
-
-//---------------------------------------------------------------------------
-// Render: month nav + tabs
-//---------------------------------------------------------------------------
-function renderTabs(){
-  const tabs = document.getElementById('tabs');
-  tabs.innerHTML = MONTHS.map(m =>
-    `<button class="tab ${m===curMonth?'active':''}" data-m="${m}">${MONTH_NAMES[m].slice(0,3)}</button>`
-  ).join('');
-  tabs.querySelectorAll('.tab').forEach(b => b.onclick = () => { curMonth = +b.dataset.m; render(); });
-
-  document.getElementById('monthTitle').textContent = `${MONTH_NAMES[curMonth]} ${YEAR}`;
-  const idx = MONTHS.indexOf(curMonth);
-  document.getElementById('prevMo').disabled = idx <= 0;
-  document.getElementById('nextMo').disabled = idx >= MONTHS.length-1;
-
-  document.getElementById('printHead').innerHTML =
-    `<h1>Vermillion Hotel — Calendar of Activities</h1><p>${MONTH_NAMES[curMonth]} ${YEAR} · Marketing &amp; Communications</p>`;
+function itemsInView(){
+  return state.items.filter(i => { const p = parseISO(i.date); return p && p.y===view.y && p.m===view.m0+1; });
 }
 
 //---------------------------------------------------------------------------
-// Render: ongoing chips + calendar grid for current month
+// Month tabs (derived from the dates present in the data)
 //---------------------------------------------------------------------------
-function monthItems(){ return state.items.filter(i => i.month === curMonth+1); }
+function renderTabs(){
+  const set = {};
+  state.items.forEach(i => { const p = parseISO(i.date); if(p){ set[`${p.y}-${pad2(p.m)}`] = {y:p.y, m0:p.m-1}; } });
+  const months = Object.values(set).sort((a,b)=> a.y-b.y || a.m0-b.m0);
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = months.map(mo => {
+    const active = (mo.y===view.y && mo.m0===view.m0) ? 'active' : '';
+    const lbl = `${MONTH_NAMES[mo.m0].slice(0,3)}${mo.y!==2026?" '"+String(mo.y).slice(2):""}`;
+    return `<button class="tab ${active}" data-y="${mo.y}" data-m="${mo.m0}">${lbl}</button>`;
+  }).join('');
+  tabs.querySelectorAll('.tab').forEach(b => b.onclick = () => { view = {y:+b.dataset.y, m0:+b.dataset.m}; render(); });
 
-function renderOngoing(){
-  const wrap = document.getElementById('ongoing');
-  const items = monthItems().filter(i => !i.day).sort((a,b)=> a.category.localeCompare(b.category) || a.title.localeCompare(b.title));
-  if(!items.length){ wrap.innerHTML = `<div class="empty">No ongoing activities for this month.</div>`; return; }
-  wrap.innerHTML = items.map(i => `
+  document.getElementById('monthTitle').textContent = `${MONTH_NAMES[view.m0]} ${view.y}`;
+  document.getElementById('printHead').innerHTML =
+    `<h1>Vermillion Hotel — Calendar of Activities</h1><p>${MONTH_NAMES[view.m0]} ${view.y} · Marketing &amp; Communications</p>`;
+  document.getElementById('agendaMonth').textContent = `${MONTH_NAMES[view.m0]} ${view.y}`;
+}
+
+//---------------------------------------------------------------------------
+// Unscheduled (only items with a missing/invalid date)
+//---------------------------------------------------------------------------
+function renderUnscheduled(){
+  const wrap = document.getElementById('unschedWrap');
+  const list = state.items.filter(i => !parseISO(i.date))
+    .sort((a,b)=> a.category.localeCompare(b.category) || a.title.localeCompare(b.title));
+  if(!list.length){ wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  document.getElementById('unscheduled').innerHTML = list.map(i => `
     <button class="chip" data-id="${i.id}" title="${esc(i.category)} — ${esc(i.title)}">
       <span class="cdot" style="background:${catColor(i.category)}"></span>
       <span class="ctxt">${esc(i.title)}</span>
-      <span class="sflag ${statusClass(i.status)}">${esc(i.status)}</span>
     </button>`).join('');
   wrap.querySelectorAll('.chip').forEach(c => c.onclick = () => openDetail(c.dataset.id));
 }
 
+//---------------------------------------------------------------------------
+// Calendar grid — every dated activity plotted on its day
+//---------------------------------------------------------------------------
 function renderGrid(){
   const grid = document.getElementById('grid');
-  const first = new Date(YEAR, curMonth, 1);
-  const startDow = first.getDay();
-  const daysIn = new Date(YEAR, curMonth+1, 0).getDate();
+  const startDow = new Date(view.y, view.m0, 1).getDay();
+  const dim = daysInMonth(view.y, view.m0+1);
   const today = new Date();
-  const isThisMonth = today.getFullYear()===YEAR && today.getMonth()===curMonth;
+  const isThisMonth = today.getFullYear()===view.y && today.getMonth()===view.m0;
 
-  const dated = {};
-  monthItems().filter(i => i.day).forEach(i => { (dated[i.day] = dated[i.day]||[]).push(i); });
+  const byDay = {};
+  itemsInView().forEach(i => { const d = parseISO(i.date).d; (byDay[d] = byDay[d]||[]).push(i); });
+  Object.values(byDay).forEach(a => a.sort((x,y)=> x.category.localeCompare(y.category) || x.title.localeCompare(y.title)));
 
   let cells = "";
   for(let p=0;p<startDow;p++) cells += `<div class="cell pad"></div>`;
-  for(let d=1; d<=daysIn; d++){
-    const evs = (dated[d]||[]).map(i =>
-      `<div class="ev" data-id="${i.id}" style="border-left-color:${catColor(i.category)}" title="${esc(i.title)}">${esc(i.title)}</div>`
+  for(let d=1; d<=dim; d++){
+    const evs = (byDay[d]||[]).map(i =>
+      `<div class="ev ${i.status==='Completed'?'done':''}" data-id="${i.id}" style="border-left-color:${catColor(i.category)}" title="${esc(i.category)} — ${esc(i.title)}">${esc(i.title)}</div>`
     ).join('');
     const todayCls = (isThisMonth && today.getDate()===d) ? ' today' : '';
     cells += `<div class="cell${todayCls}"><span class="dnum">${d}</span>${evs}</div>`;
   }
-  const totalCells = startDow + daysIn;
-  const trail = (7 - (totalCells % 7)) % 7;
+  const total = startDow + dim, trail = (7 - (total % 7)) % 7;
   for(let t=0;t<trail;t++) cells += `<div class="cell pad"></div>`;
   grid.innerHTML = cells;
   grid.querySelectorAll('.ev').forEach(e => e.onclick = () => openDetail(e.dataset.id));
 }
 
-function render(){
-  renderTabs(); renderOngoing(); renderGrid();
+//---------------------------------------------------------------------------
+// Agenda — date-sorted list for the month
+//---------------------------------------------------------------------------
+function renderAgenda(){
+  const el = document.getElementById('agenda');
+  const list = itemsInView().sort((a,b)=> parseISO(a.date).d - parseISO(b.date).d || a.title.localeCompare(b.title));
+  if(!list.length){ el.innerHTML = `<div class="empty">No activities this month.</div>`; return; }
+  el.innerHTML = list.map(i => {
+    const p = parseISO(i.date);
+    const dt = new Date(p.y, p.m-1, p.d);
+    return `<div class="agenda-row" data-id="${i.id}">
+      <div class="adate"><div class="dd">${p.d}</div><div class="wd">${WD_SHORT[dt.getDay()]}</div></div>
+      <span class="cdot" style="background:${catColor(i.category)}"></span>
+      <div class="atitle">${esc(i.title)}<div class="acat">${esc(i.category)}</div></div>
+      <span class="sflag ${statusClass(i.status)}">${esc(i.status)}</span>
+    </div>`;
+  }).join('');
+  el.querySelectorAll('.agenda-row').forEach(r => r.onclick = () => openDetail(r.dataset.id));
 }
+
+function render(){ renderTabs(); renderUnscheduled(); renderGrid(); renderAgenda(); }
 
 //---------------------------------------------------------------------------
 // Detail page
@@ -465,6 +538,7 @@ let activeId = null;
 
 function openDetail(id){
   const it = byId(id); if(!it) return;
+  const p = parseISO(it.date); if(p){ view = {y:p.y, m0:p.m-1}; }
   activeId = id;
   location.hash = "activity/" + id;
   drawDetail();
@@ -500,7 +574,7 @@ function drawDetail(){
       <div>
         <div class="cat"><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${catColor(it.category)}"></span>${esc(it.category)}</div>
         <h2>${esc(it.title)}</h2>
-        <div class="mo">${MONTH_NAMES[it.month-1]} ${YEAR}${it.day?` · Day ${it.day}`:''}</div>
+        <div class="mo" id="d_datelabel">${fmtLong(it.date)}</div>
       </div>
       <button class="btn btn-ghost no-print" id="closeDetail" title="Close" style="font-size:20px">✕</button>
     </div>
@@ -523,8 +597,9 @@ function drawDetail(){
 
       <div class="grid2">
         <div class="field">
-          <label>Timeline</label>
-          <input type="text" id="f_timeline" value="${esc(it.timeline)}" placeholder="e.g. Nov 1 – 15, or specific date">
+          <label>Timeline (date on calendar)</label>
+          <input type="date" id="f_date" value="${esc(parseISO(it.date)?it.date:'')}">
+          <div class="hint">Changing this moves the activity on the calendar.</div>
         </div>
         <div class="field">
           <label>Status</label>
@@ -536,11 +611,8 @@ function drawDetail(){
       </div>
 
       <div class="field">
-        <label>Category &amp; Month</label>
-        <div class="grid2">
-          <select id="f_category">${Object.keys(CAT_COLORS).map(c=>`<option ${c===it.category?'selected':''}>${c}</option>`).join('')}</select>
-          <select id="f_month">${MONTHS.map(m=>`<option value="${m+1}" ${m+1===it.month?'selected':''}>${MONTH_NAMES[m]} ${YEAR}</option>`).join('')}</select>
-        </div>
+        <label>Category</label>
+        <select id="f_category">${Object.keys(CAT_COLORS).map(c=>`<option ${c===it.category?'selected':''}>${c}</option>`).join('')}</select>
       </div>
 
       <div class="field">
@@ -575,13 +647,12 @@ function wireDetail(){
   const it = byId(activeId); if(!it) return;
   const bind = (elId, prop, after) => {
     const el = document.getElementById(elId);
-    el.addEventListener('input', () => { it[prop] = el.value; save(); flashSaved(); after && after(); });
-    el.addEventListener('change', () => { it[prop] = el.value; save(); flashSaved(); after && after(); });
+    const h = () => { it[prop] = el.value; save(); flashSaved(); after && after(); };
+    el.addEventListener('input', h); el.addEventListener('change', h);
   };
   bind('f_title','title', () => { document.querySelector('#page h2').textContent = it.title || '(untitled)'; });
   bind('f_description','description');
   bind('f_details','details');
-  bind('f_timeline','timeline');
   bind('f_status','status', () => {
     const pill = document.getElementById('statusPill');
     pill.textContent = it.status; pill.className = 'status-pill ' + statusClass(it.status);
@@ -590,9 +661,12 @@ function wireDetail(){
     document.querySelector('#page .cat .cdot').style.background = catColor(it.category);
     document.querySelector('#page .cat').lastChild.textContent = it.category;
   });
-  document.getElementById('f_month').addEventListener('change', e => {
-    it.month = +e.target.value; save(); flashSaved();
-    document.querySelector('#page .mo').textContent = `${MONTH_NAMES[it.month-1]} ${YEAR}${it.day?` · Day ${it.day}`:''}`;
+  // Date drives the calendar placement
+  document.getElementById('f_date').addEventListener('change', e => {
+    it.date = e.target.value || null;       // empty -> unscheduled
+    save(); flashSaved();
+    document.getElementById('d_datelabel').textContent = fmtLong(it.date);
+    const p = parseISO(it.date); if(p){ view = {y:p.y, m0:p.m-1}; }
   });
 
   document.getElementById('closeDetail').onclick = closeDetail;
@@ -605,7 +679,6 @@ function wireDetail(){
     }
   };
 
-  // Comments
   document.getElementById('addComment').onclick = () => {
     const ta = document.getElementById('newComment');
     const txt = ta.value.trim(); if(!txt) return;
@@ -614,23 +687,20 @@ function wireDetail(){
     save(); ta.value=''; drawDetail(); toast('Comment added');
   };
   document.querySelectorAll('[data-cdel]').forEach(b => b.onclick = () => {
-    const cid = b.dataset.cdel;
     if(confirm('Delete this comment?')){
-      it.comments = (it.comments||[]).filter(c => c.id !== cid); save(); drawDetail();
+      it.comments = (it.comments||[]).filter(c => c.id !== b.dataset.cdel); save(); drawDetail();
     }
   });
   document.querySelectorAll('[data-cedit]').forEach(b => b.onclick = () => {
     const cid = b.dataset.cedit;
     const c = (it.comments||[]).find(x => x.id === cid); if(!c) return;
     const node = b.closest('.comment').querySelector('[data-role="ctext"]');
-    const cur = c.text;
-    node.innerHTML = `<textarea style="width:100%;min-height:54px;border:1px solid var(--line);border-radius:8px;padding:8px;font-family:inherit;font-size:13.5px">${esc(cur)}</textarea>
+    node.innerHTML = `<textarea style="width:100%;min-height:54px;border:1px solid var(--line);border-radius:8px;padding:8px;font-family:inherit;font-size:13.5px">${esc(c.text)}</textarea>
       <div style="margin-top:6px;display:flex;gap:6px"><button class="btn btn-primary" data-csave="${cid}">Save</button><button class="btn" data-ccancel="${cid}">Cancel</button></div>`;
     node.querySelector('textarea').focus();
     node.querySelector(`[data-csave="${cid}"]`).onclick = () => {
       c.text = node.querySelector('textarea').value.trim() || c.text;
-      c.when = nowStamp() + ' (edited)';
-      save(); drawDetail();
+      c.when = nowStamp() + ' (edited)'; save(); drawDetail();
     };
     node.querySelector(`[data-ccancel="${cid}"]`).onclick = () => drawDetail();
   });
@@ -641,13 +711,12 @@ function wireDetail(){
 //---------------------------------------------------------------------------
 function newActivity(){
   const it = {
-    id: uid(), month: curMonth+1, category: "EVENTS",
-    title: "New Activity", day: null,
-    description: "", details: "", timeline: "", status: "Not Started", comments: []
+    id: uid(), category: "EVENTS", title: "New Activity",
+    date: iso(view.y, view.m0+1, 1),
+    description: "", details: "", status: "Not Started", comments: []
   };
   state.items.push(it); save();
   openDetail(it.id);
-  // focus title for quick rename
   setTimeout(()=>{ const t=document.getElementById('f_title'); if(t){ t.focus(); t.select(); } }, 30);
 }
 
@@ -662,19 +731,18 @@ function download(filename, text, mime){
   a.remove(); URL.revokeObjectURL(url);
 }
 function exportJSON(){
-  download(`vermillion-calendar-${YEAR}.json`, JSON.stringify(state, null, 2), 'application/json');
+  download('vermillion-calendar.json', JSON.stringify(state, null, 2), 'application/json');
   toast('Backup downloaded');
 }
 function csvCell(v){ return '"' + String(v==null?'':v).replace(/"/g,'""') + '"'; }
 function exportCSV(){
-  const head = ["Month","Category","Activity","Day","Timeline","Status","Description","Details","Comments"];
-  const rows = state.items.slice().sort((a,b)=> a.month-b.month || a.category.localeCompare(b.category) || a.title.localeCompare(b.title))
+  const head = ["Date","Category","Activity","Status","Description","Details","Comments"];
+  const rows = state.items.slice().sort((a,b)=> String(a.date).localeCompare(String(b.date)) || a.title.localeCompare(b.title))
     .map(i => [
-      MONTH_NAMES[i.month-1]+" "+YEAR, i.category, i.title, i.day||"", i.timeline, i.status,
-      i.description, i.details,
+      i.date||"", i.category, i.title, i.status, i.description, i.details,
       (i.comments||[]).map(c => `${c.who||'Note'} (${c.when||''}): ${c.text}`).join(" | ")
     ].map(csvCell).join(","));
-  download(`vermillion-calendar-${YEAR}.csv`, [head.map(csvCell).join(","), ...rows].join("\r\n"), 'text/csv');
+  download('vermillion-calendar.csv', [head.map(csvCell).join(","), ...rows].join("\r\n"), 'text/csv');
   toast('Spreadsheet downloaded');
 }
 function importJSON(file){
@@ -684,7 +752,7 @@ function importJSON(file){
       const p = JSON.parse(r.result);
       const items = Array.isArray(p) ? p : p.items;
       if(!Array.isArray(items)) throw new Error('bad');
-      state.items = items.map(i => Object.assign({id:uid(),comments:[],day:null,description:'',details:'',timeline:'',status:'Not Started'}, i));
+      state.items = items.map(i => Object.assign({id:uid(),comments:[],date:null,description:'',details:'',status:'Not Started'}, i));
       save(); render(); toast('Backup imported');
     }catch(e){ alert('Could not read that file — expected a calendar backup JSON.'); }
   };
@@ -692,18 +760,24 @@ function importJSON(file){
 }
 function resetAll(){
   if(confirm('Reset the calendar to the original document data? This erases your edits, added activities and comments on this device.')){
-    state = { items: seedData() }; save(); render(); toast('Reset to original');
+    state = { items: seedData() }; view = {y:2026, m0:6}; save(); render(); toast('Reset to original');
   }
 }
 
 //---------------------------------------------------------------------------
-// Wire top bar
+// Top bar wiring
 //---------------------------------------------------------------------------
+function shiftMonth(delta){
+  let m = view.m0 + delta, y = view.y;
+  while(m < 0){ m += 12; y--; } while(m > 11){ m -= 12; y++; }
+  view = {y, m0:m}; render();
+}
 function wireChrome(){
   document.getElementById('btnNew').onclick = newActivity;
   document.getElementById('btnPrint').onclick = () => window.print();
-  document.getElementById('prevMo').onclick = () => { const i=MONTHS.indexOf(curMonth); if(i>0){curMonth=MONTHS[i-1];render();} };
-  document.getElementById('nextMo').onclick = () => { const i=MONTHS.indexOf(curMonth); if(i<MONTHS.length-1){curMonth=MONTHS[i+1];render();} };
+  document.getElementById('btnToday').onclick = () => { const t=new Date(); view={y:t.getFullYear(),m0:t.getMonth()}; render(); };
+  document.getElementById('prevMo').onclick = () => shiftMonth(-1);
+  document.getElementById('nextMo').onclick = () => shiftMonth(1);
 
   const menu = document.getElementById('dlMenu');
   document.getElementById('btnDl').onclick = (e) => { e.stopPropagation(); menu.classList.toggle('open'); };
@@ -729,9 +803,7 @@ function applyHash(){
   const h = location.hash.replace(/^#/, '');
   if(h.startsWith('activity/')){
     const id = h.slice('activity/'.length);
-    const it = byId(id);
-    if(it){ curMonth = it.month-1; activeId = id; drawDetail();
-      document.getElementById('overlay').classList.add('open'); document.body.style.overflow='hidden'; }
+    if(byId(id)) openDetail(id);
   }
 }
 
