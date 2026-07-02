@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vermillion Hotel — Instagram Mood Board Captions</title>
+<style>
+  :root {
+    --vermillion: #C8371E;
+    --vermillion-dark: #9E2A15;
+    --ink: #2B2622;
+    --ink-soft: #5C544D;
+    --paper: #FAF7F3;
+    --card: #FFFFFF;
+    --line: #E8E0D8;
+    --gold: #B08D57;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.65;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
+
+  header.hero {
+    background: linear-gradient(160deg, var(--vermillion) 0%, var(--vermillion-dark) 100%);
+    color: #fff;
+    padding: 72px 24px 64px;
+    text-align: center;
+  }
+  header.hero .brand {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: 18px;
+  }
+  header.hero h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: normal;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+  }
+  header.hero p {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 15px;
+    max-width: 560px;
+    margin: 0 auto;
+    opacity: 0.92;
+  }
+  header.hero .rule {
+    width: 56px; height: 2px; background: var(--gold);
+    margin: 22px auto 0;
+  }
+
+  .intro {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--gold);
+    padding: 26px 30px;
+    margin: -36px auto 56px;
+    max-width: 720px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    color: var(--ink-soft);
+    box-shadow: 0 8px 24px rgba(43,38,34,0.08);
+    position: relative;
+  }
+  .intro strong { color: var(--ink); }
+  .intro .flag { color: var(--vermillion); font-weight: bold; }
+
+  .section-title {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--vermillion);
+    text-align: center;
+    margin: 72px 0 8px;
+  }
+  .section-sub {
+    text-align: center;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 15px;
+    margin-bottom: 40px;
+  }
+  .section-title::after {
+    content: "";
+    display: block;
+    width: 40px; height: 1px;
+    background: var(--gold);
+    margin: 14px auto 0;
+  }
+
+  .topic {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 34px 38px;
+    margin-bottom: 32px;
+    box-shadow: 0 2px 10px rgba(43,38,34,0.04);
+  }
+  .topic h3 {
+    font-size: 22px;
+    font-weight: normal;
+    margin-bottom: 4px;
+  }
+  .topic h3 .num {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .topic .tagline {
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin-bottom: 22px;
+  }
+  .shot { border-top: 1px solid var(--line); padding: 20px 0 4px; }
+  .shot:first-of-type { border-top: none; }
+  .shot .photo {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .shot .photo .lbl {
+    display: inline-block;
+    background: var(--ink);
+    color: #fff;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 2px;
+    margin-right: 10px;
+  }
+  .caption {
+    border-left: 3px solid var(--vermillion);
+    background: #FDF6F1;
+    padding: 14px 20px;
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+  .caption ul { list-style: none; margin: 8px 0; }
+  .caption ul li { padding-left: 18px; position: relative; }
+  .caption ul li::before {
+    content: "•";
+    color: var(--vermillion);
+    position: absolute;
+    left: 0;
+  }
+  .flag { color: var(--vermillion); font-weight: bold; }
+
+  .voice-notes {
+    background: var(--ink);
+    color: #EDE6DE;
+    border-radius: 4px;
+    padding: 40px 44px;
+    margin-top: 72px;
+  }
+  .voice-notes h2 {
+    font-weight: normal;
+    font-size: 22px;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .voice-notes .rule { width: 40px; height: 2px; background: var(--gold); margin: 12px 0 24px; }
+  .voice-notes ul { list-style: none; }
+  .voice-notes li {
+    padding: 10px 0 10px 26px;
+    position: relative;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .voice-notes li:last-child { border-bottom: none; }
+  .voice-notes li::before {
+    content: "—";
+    color: var(--gold);
+    position: absolute;
+    left: 0;
+  }
+  .voice-notes strong { color: #fff; }
+
+  footer {
+    text-align: center;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 60px;
+  }
+  @media (max-width: 600px) {
+    .topic { padding: 24px 20px; }
+    .voice-notes { padding: 28px 22px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="brand">Brightside Hospitality &middot; Vermillion Hotel</div>
+  <h1>Instagram Mood Board<br>Photo Suggestions &amp; Captions</h1>
+  <p>Photo directions and ready-to-post captions for the brand mood board topics, written in the Vermillion <em>Cordial Guide</em> voice — informed and insightful, clear and concise, reliably approachable.</p>
+  <div class="rule"></div>
+</header>
+
+<div class="wrap">
+
+<div class="intro">
+  <strong>Before posting:</strong> facts and figures marked with <span class="flag">&#9873;</span> are drawn from the brand deck examples (suite sizes, pool length, event dates, artist names). Verify against actual property specs first. Captions address the reader as &ldquo;you,&rdquo; speak as &ldquo;we,&rdquo; favor facts over fluff, and follow the brand style guide (US spelling, 12-hour time, spelled-out small numbers).
+</div>
+
+<div class="section-title">Core Brand Themes</div>
+<div class="section-sub">The foundations every post expresses</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 01 &middot; Cultural Essence</span>Moments of Perfection</h3>
+  <div class="tagline">Simple premium experiences that define an approachable, affordable luxury</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>Breakfast table by the window, morning light, steam rising from a cup</div>
+    <div class="caption">Some mornings need nothing more than good coffee, warm light, and time to yourself. Breakfast is served from 6 to 10AM — no rush, no fuss.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>Turndown detail: crisp white bed, handwoven runner, single flower</div>
+    <div class="caption">Perfection isn't a grand gesture. It's a bed made right, every single time. We sweat the small stuff so you don't have to.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 3</span>Sunset over the Iloilo skyline, shot from a suite window</div>
+    <div class="caption">Your last meeting ended an hour ago. This view is yours until the light runs out.</div>
+  </div>
+</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 02 &middot; Brand Promise</span>Functional Excellence</h3>
+  <div class="tagline">Travel essentials to aspirations, done right</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>Suite work desk: laptop open, notebook, good task lighting, city view</div>
+    <div class="caption">Everything you need to get things done:
+      <ul>
+        <li>A proper work desk</li>
+        <li>High-speed wireless internet</li>
+        <li>Coffee, always within reach</li>
+      </ul>
+      Simple, but done right.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>Concierge handing a guest a printed cultural map at the front desk</div>
+    <div class="caption">Ask us anything — directions, dinner bookings, the fastest route to your 9AM meeting. Our concierge is here around the clock.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 3</span>Flat-lay of in-room essentials arranged neatly (key card, safe, IPTV remote, kettle)</div>
+    <div class="caption">No hunting for outlets. No decoding the thermostat. Every room is designed so the essentials are exactly where you'd expect them.</div>
+  </div>
+</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 03 &middot; Brand Asset</span>Winning Spaces</h3>
+  <div class="tagline">In a market of the typical, generous space is itself the luxury</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>Wide-angle shot of a suite showing its full floor area</div>
+    <div class="caption">Our suites start at 45 square meters. <span class="flag">&#9873;</span> Space to work, rest, and spread out — because room to breathe is its own kind of luxury.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>The 25-meter pool, empty and still, shot early morning</div>
+    <div class="caption">A 25-meter pool in the middle of the city. <span class="flag">&#9873;</span> Do your laps before breakfast or float through the afternoon. Your pace, your call.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 3</span>Grand ballroom, fully set, symmetrical one-point perspective</div>
+    <div class="caption">When Iloilo gathers, it needs room. Our function spaces are built bigger — for conferences, celebrations, and everything in between.</div>
+  </div>
+</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 04 &middot; Brand Asset</span>A Celebration Destination</h3>
+  <div class="tagline">Rooted in the property's events heritage</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>Ballroom dressed for a wedding, moments before guests arrive</div>
+    <div class="caption">From "yes" to the last dance, Iloilo has celebrated its milestones with us for years. Tell us the occasion; we'll take care of the rest.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>Long family table at a reunion dinner, mid-toast</div>
+    <div class="caption">Reunions, birthdays, anniversaries — the moments worth gathering for deserve a space that rises to them.</div>
+  </div>
+</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 05 &middot; Cultural Root</span>Gracious Hosts</h3>
+  <div class="tagline">Ilonggo hospitality — heartwarming, hometown, innate</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>Doorman or front desk associate welcoming a guest, genuine mid-smile</div>
+    <div class="caption">Hospitality here isn't a script. It's the Ilonggo way — warm, unhurried, and genuine.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>Server remembering a regular guest's usual order, coffee mid-pour</div>
+    <div class="caption">We're here to make your stay comfortable. Feel free to ask us anything, anytime.</div>
+  </div>
+</div>
+
+<div class="section-title">Hallmark &middot; Local Surprise</div>
+<div class="section-sub">A trusted expert for guests seeking authentic connections in remarkable destinations</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 06 &middot; Signature</span>Hidden Gems</h3>
+  <div class="tagline">Off-the-beaten-track experiences, limited and sometimes exclusive to guests</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>Iloilo fish port before sunrise: boats, ice, first light</div>
+    <div class="caption">The fish port comes alive before the sun does. Join our early-morning market run and see where the city's freshest catch starts its day. Exclusive to our guests — ask the concierge to book.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>A quiet beach cove in Guimaras, no crowds in frame</div>
+    <div class="caption">A quiet cove on Guimaras, a short boat ride away. Some places don't make the guidebooks. That's why we keep a list.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 3</span>Heritage facades along Calle Real, golden hour</div>
+    <div class="caption">Iloilo became a city on October 5, 1889 — the first cityhood in the Philippines. <span class="flag">&#9873;</span> Its heritage streets are minutes from our lobby. Pick up our cultural map at the front desk and take the walk yourself.</div>
+  </div>
+</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 07 &middot; Signature</span>Iconic Flavors</h3>
+  <div class="tagline">Local F&amp;B specialties, in partnership with iconic operators</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>A steaming bowl of La Paz batchoy, chopsticks lifting noodles</div>
+    <div class="caption">La Paz batchoy: rich broth, fresh noodles, crushed chicharron — and a raw egg, if you're doing it right. Taste Iloilo's most famous bowl without leaving the hotel.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>Co-branded takeaway box packed with local delicacies</div>
+    <div class="caption">Headed home? Our takeaway boxes are packed with Iloilo favorites — biscocho, barquillos, and butterscotch — ready for the flight.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 3</span>Hotel chef plating a dish beside a local food producer or market vendor</div>
+    <div class="caption">The flavors on your plate come from Iloilo's most iconic kitchens. We partner with the city's best so you get the real thing.</div>
+  </div>
+</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 08 &middot; Signature</span>Filipino-Chinese Masterpieces</h3>
+  <div class="tagline">Works by local artists of Filipino and Chinese influences</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>A featured artwork in the lobby, guest viewing it from behind</div>
+    <div class="caption">The piece in our lobby is by an Iloilo-raised Filipino-Chinese artist. <span class="flag">&#9873;</span> Every artwork in the hotel tells part of our shared heritage — ask us about the stories behind them.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>Meet-the-artist event: artist speaking beside their work</div>
+    <div class="caption">Meet the artist behind our newest exhibit this Saturday at 4PM. Free for hotel guests; seats are limited.</div>
+  </div>
+</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 09 &middot; Signature</span>Mementos</h3>
+  <div class="tagline">Indigenous materials, crafts, and artisan work native to the destination</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>Close-up of a Hablon-woven bed runner, texture in focus</div>
+    <div class="caption">The runner on your bed is Hablon, handwoven here in Iloilo. If you'd like to take a piece of the province home, you'll find it at our retail corner.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>Retail display of local artisan crafts, neatly arranged</div>
+    <div class="caption">Souvenirs, done right: made by local artisans, from local materials, found only here.</div>
+  </div>
+</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 10 &middot; Signature</span>Happenings</h3>
+  <div class="tagline">Events and social gatherings that highlight the destination</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>Dinagyang Festival drummers and dancers in full color</div>
+    <div class="caption">Every fourth Sunday of January, Iloilo turns into one big drumbeat. Dinagyang is worth the trip on its own — and we're right in the middle of it.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>Poolside event at dusk: DJ booth, string lights, skyline behind</div>
+    <div class="caption">The Pool Club Series returns this Friday, 6PM to midnight. Local DJs, poolside drinks, and the city skyline. Hotel guests get priority access.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 3</span>Mid-Autumn Festival: mooncakes from the hotel kitchen, lantern-lit lobby</div>
+    <div class="caption">Mooncakes from our kitchen, lanterns in the lobby. Mid-Autumn Festival at Vermillion is a quiet nod to our Chinese-Filipino roots — you're welcome to join.</div>
+  </div>
+</div>
+
+<div class="section-title">Hallmark &middot; More Than Business</div>
+<div class="section-sub">Bleisure trailblazers — maximizing leisure before and after business hours</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 11 &middot; Signature</span>After Work</h3>
+  <div class="tagline">Recreation and entertainment for happiness, relaxation, and calm</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>Poolside bar at dusk, a guest loosening up after a work day</div>
+    <div class="caption">Your business trip need not be all work. Unwind at our poolside bar after a long day — the city looks better from up here.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>Sunrise yoga session on the deck</div>
+    <div class="caption">Sunrise yoga, Saturdays from 6 to 7AM. Give the day's first hour to yourself; the rest of it will thank you.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 3</span>Fitness center in use, evening, city lights outside</div>
+    <div class="caption">Deadlines all day, a proper workout at dusk. Our fitness center keeps your routine on schedule, wherever your calendar takes you.</div>
+  </div>
+</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 12 &middot; Signature</span>Staycations by Design</h3>
+  <div class="tagline">Tailored experiences for multigenerational families</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>Three generations of one family at the pool or breakfast table</div>
+    <div class="caption">One booking, three generations, zero compromises. Our staycations are designed with something for the kids, the parents, and the grandparents.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>Grandparent and grandchild at a hotel activity together</div>
+    <div class="caption">Traveling with your grandkids? You're in good company. Ask us about our multigenerational programs — built so every age has a good time.</div>
+  </div>
+</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 13 &middot; Signature</span>Bonding Breaks</h3>
+  <div class="tagline">Experiences designed to enrich connections, blending work and personal life</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>Friends around a long dinner table, mid-laughter, candid</div>
+    <div class="caption">Gather your people. Bonding Breaks are built for friends, teammates, and everyone in between — good food, generous spaces, no agenda required.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>Small team in a relaxed lounge-style meeting space</div>
+    <div class="caption">The best team conversations rarely happen in a boardroom. Book a Bonding Break and mix strategy with downtime.</div>
+  </div>
+</div>
+
+<div class="section-title">Hallmark &middot; Approachable Luxury</div>
+<div class="section-sub">Access to modest luxury — premium moments that are inclusive</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 14 &middot; Signature</span>Wabi Sabi Spaces</h3>
+  <div class="tagline">Quiet luxury through tasteful design and the charm of imperfection</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>Minimalist suite corner: natural light, linen textures, clean lines</div>
+    <div class="caption">No excess, no clutter. Just natural light, honest materials, and room to think. We call it wabi sabi. You'll call it home for the week.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>Macro detail: wood grain, woven fabric, or stone texture</div>
+    <div class="caption">Beauty lives in the details — the grain of the wood, the weave of the linen, the quiet of a well-made room.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 3</span>Corridor or lobby with soft shadow play, no people</div>
+    <div class="caption">Elegance doesn't need to announce itself. Ours speaks softly, in clean lines and quiet corners.</div>
+  </div>
+</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 15 &middot; Signature</span>Chinese-Filipino Touches</h3>
+  <div class="tagline">Heritage accents woven through product design</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>Tea service or a vermillion-red accent detail in a suite</div>
+    <div class="caption">Vermillion is more than our name. It's a color of fortune and celebration in Chinese tradition — and you'll find it in the details, from our tea service to the thread on your bed runner.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>Architectural accent: lattice work, subtle symbolism in the design</div>
+    <div class="caption">Look closely. Nods to our Chinese-Filipino ancestry are woven through the hotel — in the craftsmanship, the palette, and the quiet symbolism of every space.</div>
+  </div>
+</div>
+
+<div class="section-title">Hallmark &middot; Success Stories</div>
+<div class="section-sub">A trusted partner for success — in fulfillment or celebration of it</div>
+
+<div class="topic">
+  <h3><span class="num">Topic 16 &middot; Signature</span>Winning Moments</h3>
+  <div class="tagline">The journey to success, and the celebration of it</div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 1</span>Glasses raised in a private function room, celebration mid-toast</div>
+    <div class="caption">Closed the deal? Passed the boards? Some wins deserve more than a quiet nod. Celebrate them here.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 2</span>A guest working at dawn, city view, coffee beside the laptop</div>
+    <div class="caption">Success rarely looks like a podium. More often, it looks like this — an early start, quiet focus, and a space that keeps up with you.</div>
+  </div>
+  <div class="shot">
+    <div class="photo"><span class="lbl">Photo 3</span>Awards night or gala in the ballroom, stage lit, audience applauding</div>
+    <div class="caption">To everyone who did the work to get here: this room is for you.</div>
+  </div>
+</div>
+
+<div class="voice-notes">
+  <h2>Voice Notes Applied Throughout</h2>
+  <div class="rule"></div>
+  <ul>
+    <li><strong>Informed and insightful</strong> — captions lead with real local knowledge (Dinagyang, Hablon, batchoy, cityhood facts) instead of generic praise</li>
+    <li><strong>Clear and concise</strong> — short sentences, bullets for amenity lists, no fluff or clichés ("world-class," "dream stay," and similar are avoided)</li>
+    <li><strong>Reliably approachable</strong> — readers are "you," the brand is "we"; friendly professional, never overly formal or overly enthusiastic</li>
+    <li><strong>Understated confidence</strong> — bold and direct where it earns it ("Your pace, your call."), never boastful</li>
+    <li><strong>Style guide</strong> — 12-hour time with no space (4PM, 6 to 10AM), "midnight" spelled out, small numbers written out, metric measurements, US spelling</li>
+  </ul>
+</div>
+
+<footer>Vermillion Hotel &middot; Moments of Perfection</footer>
+
+</div>
+</body>
+</html>
