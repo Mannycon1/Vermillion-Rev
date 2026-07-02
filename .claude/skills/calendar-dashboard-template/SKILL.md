@@ -31,6 +31,7 @@ template and edit one `CONFIG` block — no framework, no build, no network.
   Status (dropdown), Comments (add/edit/delete)**. Activities can be added and
   deleted; every field supports edit/add/delete.
 - **Agenda** list under the grid (date-sorted, one row per milestone).
+- **Colour tags** — optional per-activity pastel colour (Post=red, Event=yellow, Presentation=green, Material=blue, Others=white by default) rendered as the event fill, with a legend above the grid. Set `color` on an activity to one of `post|event|presentation|material|others`.
 - **Printable** (print / save-as-PDF styles for the month and for a single
   activity page) and **Downloadable** (JSON backup + CSV spreadsheet), with
   **Import** and **Reset to original**.

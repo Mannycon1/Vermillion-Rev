@@ -63,16 +63,26 @@
   .cal{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
   .dow{display:grid;grid-template-columns:repeat(7,1fr);background:#fafbfc;border-bottom:1px solid var(--line)}
   .dow div{padding:9px 8px;font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-align:center;text-transform:uppercase}
-  .grid{display:grid;grid-template-columns:repeat(7,1fr)}
-  .cell{min-height:108px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px;position:relative;display:flex;flex-direction:column;gap:4px}
+  .grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+  .cell{min-height:108px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px;min-width:0;position:relative;display:flex;flex-direction:column;gap:4px}
   .cell:nth-child(7n){border-right:none}
   .cell.pad{background:#fafbfc}
   .cell .dnum{font-size:12px;color:var(--muted);font-weight:600;align-self:flex-start}
   .cell.today .dnum{background:var(--primary);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
-  .ev{font-size:11.5px;padding:3px 6px;border-radius:5px;cursor:pointer;border-left:3px solid #888;background:#f3f4f6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+  .ev{font-size:11.5px;padding:3px 6px;border-radius:5px;cursor:pointer;border-left:3px solid #888;background:#f3f4f6;min-width:0;overflow-wrap:anywhere;word-break:break-word;white-space:normal;line-height:1.3}
   .ev:hover{filter:brightness(.96)}
   .ev .evlab{color:var(--muted);font-style:italic}
   .ev.done{text-decoration:line-through;opacity:.6}
+
+  /* Colour legend + swatches */
+  .legend{display:flex;flex-wrap:wrap;gap:9px 16px;align-items:center;margin:2px 0 12px;font-size:12px;color:var(--muted)}
+  .legend .lg{display:inline-flex;align-items:center;gap:6px}
+  .legend .lg-sw{width:14px;height:14px;border-radius:4px;display:inline-block;border:1px solid #ccc}
+  .swatches{display:flex;flex-wrap:wrap;gap:8px}
+  .swatch{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:13px;color:var(--text)}
+  .swatch:hover{background:#f6f7f9}
+  .swatch .sw{width:15px;height:15px;border-radius:4px;border:1px solid #ccc}
+  .swatch.sel{border-color:#1a1d23;font-weight:700}
 
   /* Agenda */
   .agenda{display:flex;flex-direction:column;gap:6px}
@@ -212,6 +222,8 @@
     <div class="ongoing" id="unscheduled"></div>
   </div>
 
+  <div class="legend no-print" id="legend"></div>
+
   <div class="cal">
     <div class="dow"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
     <div class="grid" id="grid"></div>
@@ -250,6 +262,17 @@ const CAT_COLORS = {
   "BANQUETS PROMOTION":"#b8860b"
 };
 const catColor = c => CAT_COLORS[c] || "#6b7280";
+
+// Activity colour tags (pastel field colours)
+const COLOR_DEFS = [
+  { key:"post",         label:"Post",         bg:"#f8d7da", border:"#e59aa2", text:"#842029" },
+  { key:"event",        label:"Event",        bg:"#fff3cd", border:"#efd071", text:"#7a5b00" },
+  { key:"presentation", label:"Presentation", bg:"#d1e7dd", border:"#9dd3bc", text:"#0f5132" },
+  { key:"material",     label:"Material",     bg:"#cfe2ff", border:"#9ec5fe", text:"#084298" },
+  { key:"others",       label:"Others",       bg:"#ffffff", border:"#e3e6ec", text:"#1a1d23" }
+];
+const COLOR_MAP = COLOR_DEFS.reduce((o,d)=>(o[d.key]=d,o),{});
+const colorDef = k => COLOR_MAP[k] || COLOR_MAP.others;
 
 //---------------------------------------------------------------------------
 // Date helpers (ISO yyyy-mm-dd)
@@ -290,7 +313,7 @@ function seedData(){
     month, category, title,
     dates: date ? [{ id:"m"+(++n), date, label:"", done:false }] : [],
     description: "", details: details || "",
-    status: "Not Started", comments: []
+    status: "Not Started", color: "others", comments: []
   });
   const items = [
     // ---- JULY (7) ----
@@ -437,7 +460,7 @@ function byId(id){ return state.items.find(i => i.id === id); }
 // Make any item conform to the milestone schema (handles older single-date data)
 function normalizeItem(i){
   const it = Object.assign({ id: "a"+Math.random().toString(36).slice(2,9), category:"EVENTS", title:"Untitled",
-    description:"", details:"", status:"Not Started", comments:[] }, i);
+    description:"", details:"", status:"Not Started", color:"others", comments:[] }, i);
   if(Array.isArray(i.dates)){
     it.dates = i.dates.filter(Boolean).map(m => ({
       id: m.id || uid(), date: (m.date||"")+"", label: m.label||"", done: !!m.done
@@ -448,6 +471,7 @@ function normalizeItem(i){
     it.dates = [];
   }
   delete it.date; delete it.timeline; delete it.day;
+  if(!COLOR_MAP[it.color]) it.color = "others";
   return it;
 }
 
@@ -551,7 +575,8 @@ function renderGrid(){
   for(let d=1; d<=dim; d++){
     const evs = (byDay[d]||[]).map(o => {
       const lab = o.ms.label ? ` <span class="evlab">· ${esc(o.ms.label)}</span>` : "";
-      return `<div class="ev ${o.ms.done?'done':''}" data-id="${o.it.id}" style="border-left-color:${catColor(o.it.category)}" title="${esc(o.it.category)} — ${esc(o.it.title)}${o.ms.label?' ('+esc(o.ms.label)+')':''}">${esc(o.it.title)}${lab}</div>`;
+      const cd = colorDef(o.it.color);
+      return `<div class="ev ${o.ms.done?'done':''}" data-id="${o.it.id}" style="background:${cd.bg};color:${cd.text};border:1px solid ${cd.border};border-left:4px solid ${cd.border}" title="${esc(cd.label)} · ${esc(o.it.category)} — ${esc(o.it.title)}${o.ms.label?' ('+esc(o.ms.label)+')':''}">${esc(o.it.title)}${lab}</div>`;
     }).join('');
     const todayCls = (isThisMonth && today.getDate()===d) ? ' today' : '';
     cells += `<div class="cell${todayCls}"><span class="dnum">${d}</span>${evs}</div>`;
@@ -576,7 +601,8 @@ function renderAgenda(){
     const flag = o.ms.done
       ? `<span class="sflag st-done">✓ Done</span>`
       : `<span class="sflag ${statusClass(o.it.status)}">${esc(o.it.status)}</span>`;
-    return `<div class="agenda-row" data-id="${o.it.id}">
+    const acd = colorDef(o.it.color);
+    return `<div class="agenda-row" data-id="${o.it.id}" style="border-left:5px solid ${acd.border}">
       <div class="adate"><div class="dd">${p.d}</div><div class="wd">${WD_SHORT[dt.getDay()]}</div></div>
       <span class="cdot" style="background:${catColor(o.it.category)}"></span>
       <div class="atitle">${esc(o.it.title)}<div class="acat">${esc(sub)}</div></div>
@@ -586,7 +612,11 @@ function renderAgenda(){
   el.querySelectorAll('.agenda-row').forEach(r => r.onclick = () => openDetail(r.dataset.id));
 }
 
-function render(){ renderTabs(); renderUnscheduled(); renderGrid(); renderAgenda(); }
+function renderLegend(){
+  const el = document.getElementById('legend'); if(!el) return;
+  el.innerHTML = COLOR_DEFS.map(d => `<span class="lg"><span class="lg-sw" style="background:${d.bg};border-color:${d.border}"></span>${esc(d.label)}</span>`).join('');
+}
+function render(){ renderTabs(); renderUnscheduled(); renderLegend(); renderGrid(); renderAgenda(); }
 
 //---------------------------------------------------------------------------
 // Detail page
@@ -684,6 +714,13 @@ function drawDetail(){
       </div>
 
       <div class="field">
+        <label>Colour tag</label>
+        <div class="swatches" id="f_color">
+          ${COLOR_DEFS.map(d=>`<button type="button" class="swatch ${d.key===(it.color||'others')?'sel':''}" data-color="${d.key}"><span class="sw" style="background:${d.bg};border-color:${d.border}"></span>${esc(d.label)}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="field">
         <label>Comments</label>
         <div class="comments" id="commentList">${comments}</div>
         <div class="add-comment no-print" style="margin-top:10px">
@@ -755,6 +792,11 @@ function wireDetail(){
     document.querySelector('#page .cat').lastChild.textContent = it.category;
   });
 
+  document.querySelectorAll('#f_color .swatch').forEach(b => b.onclick = () => {
+    it.color = b.dataset.color; save(); flashSaved();
+    document.querySelectorAll('#f_color .swatch').forEach(x => x.classList.toggle('sel', x===b));
+  });
+
   wireMilestones();
   document.getElementById('addMilestone').onclick = () => {
     it.dates.push({ id: uid(), date:"", label:"", done:false });
@@ -807,7 +849,7 @@ function newActivity(){
   const it = {
     id: "a"+Math.random().toString(36).slice(2,9), category: "EVENTS", title: "New Activity",
     dates: [{ id: uid(), date: iso(view.y, view.m0+1, 1), label:"", done:false }],
-    description: "", details: "", status: "Not Started", comments: []
+    description: "", details: "", status: "Not Started", color: "others", comments: []
   };
   state.items.push(it); save();
   openDetail(it.id);
@@ -830,18 +872,18 @@ function exportJSON(){
 }
 function csvCell(v){ return '"' + String(v==null?'':v).replace(/"/g,'""') + '"'; }
 function exportCSV(){
-  const head = ["Date","Milestone","Done","Category","Activity","Status","Description","Details","Comments"];
+  const head = ["Date","Milestone","Done","Category","Type","Activity","Status","Description","Details","Comments"];
   const rows = [];
   state.items.forEach(i => {
     const commentStr = (i.comments||[]).map(c => `${c.who||'Note'} (${c.when||''}): ${c.text}`).join(" | ");
     const dts = (i.dates||[]).filter(m => parseISO(m.date));
     if(dts.length){
-      dts.forEach(m => rows.push([m.date, m.label||"", m.done?"Yes":"", i.category, i.title, i.status, i.description, i.details, commentStr]));
+      dts.forEach(m => rows.push([m.date, m.label||"", m.done?"Yes":"", i.category, colorDef(i.color).label, i.title, i.status, i.description, i.details, commentStr]));
     } else {
-      rows.push(["", "", "", i.category, i.title, i.status, i.description, i.details, commentStr]);
+      rows.push(["", "", "", i.category, colorDef(i.color).label, i.title, i.status, i.description, i.details, commentStr]);
     }
   });
-  rows.sort((a,b)=> String(a[0]).localeCompare(String(b[0])) || String(a[4]).localeCompare(String(b[4])));
+  rows.sort((a,b)=> String(a[0]).localeCompare(String(b[0])) || String(a[5]).localeCompare(String(b[5])));
   const body = rows.map(r => r.map(csvCell).join(","));
   download('vermillion-calendar.csv', [head.map(csvCell).join(","), ...body].join("\r\n"), 'text/csv');
   toast('Spreadsheet downloaded');
