@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hubb Hotels — The Concept Statement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f1e7d9;
+    --card:#f8f1e7;
+    --card-edge:rgba(42,33,24,.10);
+    --ink:#2a2018;
+    --ink-soft:#5e4f41;
+    --ink-faint:#8a7965;
+    --terra:#b5512f;
+    --terra-deep:#94401f;
+    --ochre:#bd8a3a;
+    --espresso:#241b14;
+    --cream:#f3eadc;
+    --hair:rgba(42,33,24,.14);
+
+    /* product accents */
+    --core:#1d3d5c;   /* Hubb Hotels */
+    --plus:#2d5a47;   /* Hubb+ */
+    --btq:#6b3a2a;    /* Hubb Boutique */
+    --xps:#4a3d6e;    /* Hubb Express */
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:"Newsreader",Georgia,serif;
+    color:var(--ink);
+    background:
+      radial-gradient(120% 90% at 80% 0%,rgba(189,138,58,.10),transparent 55%),
+      radial-gradient(90% 80% at 0% 100%,rgba(181,81,47,.08),transparent 50%),
+      var(--paper);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.6;
+  }
+
+  /* grain overlay */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
+    opacity:.05;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .wrap{max-width:960px;margin:0 auto;padding:0 40px;}
+
+  /* ===== reveal on scroll ===== */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,.7,.25,1), transform .8s cubic-bezier(.2,.7,.25,1);}
+  .reveal.in{opacity:1;transform:none;}
+
+  /* ===== masthead ===== */
+  .masthead{padding:96px 0 64px;}
+  .kicker{
+    font-family:"Fraunces",serif;font-size:12px;letter-spacing:.4em;
+    text-transform:uppercase;color:var(--terra);font-weight:600;margin-bottom:30px;
+  }
+  .masthead h1{
+    font-family:"Fraunces",serif;font-weight:300;
+    font-size:clamp(52px,8vw,104px);line-height:.92;letter-spacing:-.02em;color:var(--ink);
+  }
+  .masthead h1 em{font-style:italic;color:var(--terra);font-weight:400;}
+  .rule{height:1px;width:min(560px,70%);background:var(--hair);margin:38px 0 28px;position:relative;}
+  .rule::before{content:"";position:absolute;left:0;top:0;height:1px;width:120px;background:var(--terra);}
+  .masthead .sub{
+    font-family:"Fraunces",serif;font-style:italic;font-weight:400;
+    font-size:clamp(21px,2.5vw,30px);color:var(--ink-soft);line-height:1.3;
+  }
+
+  /* ===== product statements ===== */
+  .products{padding:26px 0 10px;display:flex;flex-direction:column;gap:22px;}
+  .prod{
+    background:var(--card);border:1px solid var(--card-edge);border-radius:3px;
+    padding:40px 46px 42px;position:relative;overflow:hidden;
+    box-shadow:0 18px 40px -30px rgba(42,33,24,.5);
+  }
+  .prod::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent);}
+  .prod .tag{
+    font-family:"Fraunces",serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+    font-weight:600;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:12px;
+  }
+  .prod .tag::after{content:"";height:1px;flex:1;max-width:70px;background:var(--accent);opacity:.35;}
+  .prod h2{
+    font-family:"Fraunces",serif;font-weight:500;letter-spacing:-.015em;
+    font-size:clamp(28px,3.4vw,42px);line-height:1;color:var(--ink);margin-bottom:16px;
+  }
+  .prod p{
+    font-size:clamp(17px,1.8vw,21px);line-height:1.55;color:var(--ink-soft);max-width:58ch;
+  }
+  .prod p b{font-weight:600;color:var(--ink);}
+  .prod p em{font-style:italic;color:var(--ink);}
+  .prod .big{
+    position:absolute;right:-8px;bottom:-40px;font-family:"Fraunces",serif;
+    font-weight:300;font-size:180px;line-height:1;color:var(--accent);opacity:.07;
+    pointer-events:none;user-select:none;
+  }
+
+  /* ===== promise ===== */
+  .promise{padding:78px 0 20px;}
+  .promise .lab{
+    font-family:"Fraunces",serif;font-size:11px;letter-spacing:.34em;
+    text-transform:uppercase;color:var(--terra);font-weight:600;
+    display:flex;align-items:center;gap:14px;margin-bottom:30px;
+  }
+  .promise .lab::after{content:"";height:1px;flex:1;max-width:90px;background:var(--terra);opacity:.4;}
+  .promise p{
+    font-family:"Fraunces",serif;font-weight:300;
+    font-size:clamp(23px,2.9vw,36px);line-height:1.38;letter-spacing:-.012em;color:var(--ink);
+    margin-bottom:36px;
+  }
+  .promise p em{font-style:italic;font-weight:400;color:var(--terra);}
+
+  /* ===== closing ===== */
+  .closing{padding:44px 0 100px;}
+  .pull{
+    background:var(--espresso);color:var(--cream);
+    border-radius:3px;padding:56px 60px;position:relative;overflow:hidden;
+    box-shadow:0 34px 70px -36px rgba(36,27,20,.65);
+  }
+  .pull::before{
+    content:"\201C";position:absolute;top:-34px;left:24px;
+    font-family:"Fraunces",serif;font-size:200px;color:rgba(189,138,58,.18);line-height:1;
+  }
+  .pull p{
+    font-family:"Fraunces",serif;font-weight:400;font-style:italic;
+    font-size:clamp(24px,3vw,38px);line-height:1.3;position:relative;z-index:1;
+    letter-spacing:-.01em;
+  }
+  .pull p b{font-weight:600;font-style:normal;color:#fff;}
+  .pull .accent-line{
+    margin-top:28px;height:1px;width:120px;background:var(--ochre);position:relative;z-index:1;
+  }
+
+  /* ===== footer ===== */
+  footer{border-top:1px solid var(--hair);padding:26px 0 40px;}
+  .foot-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+  .foot-brand{
+    font-family:"Fraunces",serif;font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink);font-weight:600;
+  }
+  .foot-brand .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--terra);margin-right:9px;vertical-align:2px;}
+  .foot-note{font-size:13px;color:var(--ink-faint);font-style:italic;}
+
+  @media(max-width:640px){
+    .wrap{padding:0 22px;}
+    .masthead{padding:64px 0 44px;}
+    .prod{padding:30px 26px 34px;}
+    .pull{padding:38px 30px;}
+  }
+
+  @media print{
+    body::before{display:none;}
+    .reveal{opacity:1;transform:none;}
+    .prod,.pull{box-shadow:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ===== masthead ===== -->
+  <header class="masthead">
+    <div class="kicker reveal">Hubb Hotels World · Brand Concept</div>
+    <h1 class="reveal">The Concept<br><em>Statement</em></h1>
+    <div class="rule reveal"></div>
+    <div class="sub reveal">The Sensible Filipino Stay</div>
+  </header>
+
+  <!-- ===== product statements ===== -->
+  <section class="products">
+
+    <article class="prod reveal" style="--accent:var(--core)">
+      <div class="tag">Premium Economy City Hotel</div>
+      <h2>Hubb Hotels</h2>
+      <p>is a trusted familiar touch. A motherland&rsquo;s warmth. A longtime friend to see. A supportive family to visit.</p>
+      <span class="big">01</span>
+    </article>
+
+    <article class="prod reveal" style="--accent:var(--plus)">
+      <div class="tag">Full-Service Upper-Midscale</div>
+      <h2>Hubb+</h2>
+      <p>is a guilt-free indulgence. An elevated choice, yet a practical alternative. It is a supportive companion for assured comfort, not a compromise on standards.</p>
+      <span class="big">02</span>
+    </article>
+
+    <article class="prod reveal" style="--accent:var(--btq)">
+      <div class="tag">Design-Led Filipino Soulful Hotels</div>
+      <h2>Hubb Boutique</h2>
+      <p>is a welcome surprise. The local flavor as described &mdash; yet the reality out-delivers the expectations.</p>
+      <span class="big">03</span>
+    </article>
+
+    <article class="prod reveal" style="--accent:var(--xps)">
+      <div class="tag">Essential Value Plus</div>
+      <h2>Hubb Express</h2>
+      <p>is a sigh of relief. A safe, trustworthy, quick encounter that is favorably sensible and conveniently satisfying.</p>
+      <span class="big">04</span>
+    </article>
+
+  </section>
+
+  <!-- ===== the promise ===== -->
+  <section class="promise">
+    <div class="lab reveal">The Promise</div>
+    <p class="reveal">More than a sensible stay, Hubb Hotels promises a comfortable stay that <em>justifies every peso spent</em> &mdash; from practical spaces, services, and amenities designed for modern travelers, to a genuine Filipino care that embodies the soul and flavor of the locality.</p>
+    <p class="reveal">It is exactly where you need it and how you simply want it. Every stay at a Hubb hotel is a remembered feeling of belonging, <em>born of family care, not just familiarity</em>. It is the true Filipino story, with a cast that defines real practical lives locally, and how they move globally.</p>
+  </section>
+
+  <!-- ===== closing ===== -->
+  <section class="closing">
+    <div class="pull reveal">
+      <p>Hubb Hotels is a familiar place to return to. Where <b>malasakit</b> is the soul of every connection and stay.</p>
+      <div class="accent-line"></div>
+    </div>
+  </section>
+
+  <!-- ===== footer ===== -->
+  <footer>
+    <div class="foot-inner">
+      <div class="foot-brand"><span class="dot"></span>Hubb Hotels World</div>
+      <div class="foot-note">A Discovery Hospitality company</div>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{
+    el.style.transitionDelay = (i%4)*90 + 'ms';
+    io.observe(el);
+  });
+</script>
+</body>
+</html>
