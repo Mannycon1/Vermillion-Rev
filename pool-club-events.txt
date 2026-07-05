@@ -1,0 +1,12 @@
+Pool Club Events:
+
+1. BBQ Nights (Band)
+2. Pool Club Party (DJ)
+3. Night Swimming (DJ)
+4. Concert (Performer)
+5. Mahjong Nights (DJ)
+6. Opera Nights (Opera)
+7. Sake Nights (Performer)
+8. Fashion Event (Fashion Show)
+9. Brand Launch Event (3)
+10. Music Festival (Concert)
