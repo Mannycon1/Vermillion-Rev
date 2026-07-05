@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Vermillion Hotel — Calendar of Activities</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#ffffff; --line:#e3e6ec; --text:#1a1d23; --muted:#6b7280;
+    --primary:#9b1c1c; --primary-700:#7c1414; --primary-50:#fbeaea;
+    --shadow:0 1px 3px rgba(16,24,40,.08),0 1px 2px rgba(16,24,40,.06);
+    --shadow-lg:0 10px 30px rgba(16,24,40,.18);
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+  button{font-family:inherit}
+
+  /* Top bar */
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:14px 22px;background:var(--card);border-bottom:1px solid var(--line);flex-wrap:wrap;position:sticky;top:0;z-index:30}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .mark{width:34px;height:34px;border-radius:8px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;letter-spacing:.5px}
+  .brand h1{margin:0;font-size:17px;line-height:1.1}
+  .brand .sub{color:var(--muted);font-size:12px;margin-top:2px}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{padding:8px 13px;border:1px solid var(--line);background:#fff;border-radius:7px;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .btn:hover{background:#f0f1f4}
+  .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .btn-primary:hover{background:var(--primary-700)}
+  .btn-ghost{background:transparent;border-color:transparent}
+  .menu{position:relative}
+  .menu-pop{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:var(--shadow-lg);min-width:200px;padding:6px;display:none;z-index:40}
+  .menu.open .menu-pop{display:block}
+  .menu-pop button{display:flex;width:100%;text-align:left;border:none;background:none;padding:9px 10px;border-radius:6px;cursor:pointer;font-size:13px;gap:8px;align-items:center}
+  .menu-pop button:hover{background:var(--primary-50)}
+  .menu-pop .sep{height:1px;background:var(--line);margin:5px 4px}
+
+  /* Month nav */
+  .subbar{display:flex;align-items:center;gap:10px;padding:12px 22px;background:#fafbfc;border-bottom:1px solid var(--line);flex-wrap:wrap;position:sticky;top:63px;z-index:20}
+  .nav-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:16px;line-height:1}
+  .nav-btn:hover{background:#f0f1f4}
+  .nav-btn:disabled{opacity:.4;cursor:not-allowed}
+  .month-title{font-size:18px;font-weight:700;min-width:190px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+  .tab{padding:6px 12px;border:1px solid var(--line);background:#fff;border-radius:20px;cursor:pointer;font-size:12.5px;color:var(--muted)}
+  .tab:hover{background:#f0f1f4}
+  .tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+  main{padding:18px 22px;max-width:1180px;margin:0 auto}
+
+  /* All-month / ongoing */
+  .section-label{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin:4px 0 10px}
+  .ongoing{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+  .chip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;box-shadow:var(--shadow);font-size:13px;max-width:100%}
+  .chip:hover{transform:translateY(-1px);box-shadow:var(--shadow-lg)}
+  .chip .cdot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+  .chip .ctxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chip .sflag{font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600;white-space:nowrap}
+
+  /* Department color legend */
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin:0 0 14px}
+  .legend .lg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+  .legend .lsw{width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.15);flex:0 0 auto}
+
+  /* Calendar grid */
+  .cal{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  .dow{display:grid;grid-template-columns:repeat(7,1fr);background:#fafbfc;border-bottom:1px solid var(--line)}
+  .dow div{padding:9px 8px;font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-align:center;text-transform:uppercase}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr)}
+  .cell{min-height:104px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px;position:relative;display:flex;flex-direction:column;gap:4px}
+  .cell:nth-child(7n){border-right:none}
+  .cell.pad{background:#fafbfc}
+  .cell .dnum{font-size:12px;color:var(--muted);font-weight:600;align-self:flex-start}
+  .cell.today .dnum{background:var(--primary);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+  .ev{font-size:11.5px;padding:3px 6px;border-radius:5px;cursor:pointer;border-left:3px solid #888;background:#f3f4f6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+  .ev:hover{filter:brightness(.96)}
+
+  /* Status flags */
+  .st-notstarted{background:#eef0f3;color:#4b5563}
+  .st-planning{background:#e0eaff;color:#1d4ed8}
+  .st-inprogress{background:#fef3c7;color:#92600a}
+  .st-onhold{background:#ede9fe;color:#6d28d9}
+  .st-completed{background:#dcfce7;color:#15803d}
+  .st-cancelled{background:#fee2e2;color:#b91c1c}
+
+  /* Detail page */
+  .overlay{position:fixed;inset:0;background:rgba(20,22,28,.45);z-index:50;display:none;overflow:auto;padding:28px 14px}
+  .overlay.open{display:block}
+  .page{max-width:780px;margin:0 auto;background:#fff;border-radius:14px;box-shadow:var(--shadow-lg);overflow:hidden}
+  .page-head{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .page-head .cat{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+  .page-head h2{margin:0;font-size:20px;line-height:1.2}
+  .page-head .mo{color:var(--muted);font-size:12.5px;margin-top:5px}
+  .page-body{padding:20px 22px;display:flex;flex-direction:column;gap:16px}
+  .field label{display:block;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .field input[type=text],.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:14px;font-family:inherit;color:var(--text);background:#fff}
+  .field textarea{resize:vertical;min-height:64px;line-height:1.5}
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-50)}
+  .field .hint{font-size:11px;color:var(--muted);margin-top:4px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
+
+  .status-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .status-pill{font-size:11px;padding:3px 10px;border-radius:12px;font-weight:700}
+
+  /* Comments */
+  .comments{display:flex;flex-direction:column;gap:10px}
+  .comment{border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:#fafbfc}
+  .comment .cmeta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+  .comment .cwho{font-size:12px;font-weight:600}
+  .comment .cwhen{font-size:11px;color:var(--muted)}
+  .comment .ctext{font-size:13.5px;line-height:1.5;white-space:pre-wrap}
+  .comment .cact{display:flex;gap:6px}
+  .linkbtn{border:none;background:none;color:var(--primary);cursor:pointer;font-size:12px;padding:2px 4px;border-radius:4px}
+  .linkbtn:hover{background:var(--primary-50)}
+  .linkbtn.danger{color:#b91c1c}
+  .linkbtn.danger:hover{background:#fee2e2}
+  .add-comment{display:flex;flex-direction:column;gap:8px}
+  .add-comment textarea{min-height:54px}
+
+  .page-foot{padding:14px 22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#fafbfc}
+  .saved-flash{font-size:12px;color:#15803d;opacity:0;transition:opacity .3s}
+  .saved-flash.show{opacity:1}
+
+  .empty{color:var(--muted);font-size:13px;padding:10px 0}
+
+  /* Toast */
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1d23;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:80}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+
+  /* Print */
+  @media print{
+    .topbar,.subbar,.no-print{display:none!important}
+    body{background:#fff}
+    main{max-width:none;padding:0}
+    .cal{box-shadow:none;border-color:#999}
+    .overlay{position:static;background:#fff;padding:0;display:block}
+    .overlay:not(.open){display:none}
+    .overlay.open ~ #app{display:none}
+    .page{box-shadow:none;max-width:none}
+    .page-foot{display:none}
+    .field input,.field textarea,.field select{border-color:#bbb}
+    .ev{border:1px solid #ccc}
+    @page{margin:14mm}
+  }
+  .print-head{display:none}
+  @media print{.print-head{display:block;margin-bottom:10px}.print-head h1{margin:0;font-size:18px}.print-head p{margin:2px 0 0;color:#444;font-size:12px}}
+</style>
+</head>
+<body>
+
+<div class="topbar no-print">
+  <div class="brand">
+    <div class="mark">V</div>
+    <div>
+      <h1>Calendar of Activities</h1>
+      <div class="sub">Vermillion Hotel · Marketing &amp; Communications</div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn btn-primary" id="btnNew">＋ New Activity</button>
+    <button class="btn" id="btnPrint">🖨 Print</button>
+    <div class="menu" id="dlMenu">
+      <button class="btn" id="btnDl">⬇ Download ▾</button>
+      <div class="menu-pop">
+        <button data-act="json">⬇ Download backup (JSON)</button>
+        <button data-act="csv">⬇ Download spreadsheet (CSV)</button>
+        <div class="sep"></div>
+        <button data-act="import">⬆ Import backup (JSON)</button>
+        <div class="sep"></div>
+        <button data-act="reset">↺ Reset to original</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="subbar no-print">
+  <button class="nav-btn" id="prevMo" title="Previous month">‹</button>
+  <div class="month-title" id="monthTitle">—</div>
+  <button class="nav-btn" id="nextMo" title="Next month">›</button>
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<main id="app">
+  <div class="print-head" id="printHead"></div>
+
+  <div class="section-label">Department color key</div>
+  <div class="legend" id="deptLegend"></div>
+
+  <div class="section-label">All-month &amp; ongoing activities <span style="font-weight:400;text-transform:none;letter-spacing:0">— click any item to open its page</span></div>
+  <div class="ongoing" id="ongoing"></div>
+
+  <div class="section-label">Scheduled dates</div>
+  <div class="cal">
+    <div class="dow"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
+    <div class="grid" id="grid"></div>
+  </div>
+</main>
+
+<!-- Detail page overlay -->
+<div class="overlay" id="overlay">
+  <div class="page" id="page"><!-- filled by JS --></div>
+</div>
+
+<input type="file" id="importFile" accept="application/json,.json" style="display:none">
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+//---------------------------------------------------------------------------
+// Config
+//---------------------------------------------------------------------------
+const YEAR = 2026;                       // calendar spans Jul–Dec 2026
+const MONTHS = [6,7,8,9,10,11];          // 0-indexed: Jul..Dec
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const STORAGE_KEY = "vermillion_calendar_v1";
+const STATUSES = ["Not Started","Planning","In Progress","On Hold","Completed","Cancelled"];
+const statusClass = s => "st-" + (s||"Not Started").toLowerCase().replace(/[^a-z]/g,"");
+
+// Category accent colors
+const CAT_COLORS = {
+  "CHRISTMAS CAMPAIGN":"#157347",
+  "CAMPAIGN":"#1e6fd9",
+  "EVENTS":"#8e44ad",
+  "ROOM PROMOTION":"#0f9d8f",
+  "CULINARY PROMOTION":"#e67e22",
+  "BANQUETS PROMOTION":"#b8860b"
+};
+const catColor = c => CAT_COLORS[c] || "#6b7280";
+
+// Department pastel colors — fill the activity buttons
+// Red = All Hotel · Blue = Rooms · Green = F&B · Yellow = Pool Club
+// Brown = Banquets · Orange = Branding · White = Others
+const DEPTS = ["All Hotel","Rooms","F&B","Pool Club","Banquets","Branding","Others"];
+const DEPT_COLORS = {
+  "All Hotel":"#f9c6c6",
+  "Rooms":"#c3d9f7",
+  "F&B":"#c5ecc9",
+  "Pool Club":"#faf0b0",
+  "Banquets":"#e0cbae",
+  "Branding":"#fbd6ae",
+  "Others":"#ffffff"
+};
+const deptColor = d => DEPT_COLORS[d] || DEPT_COLORS["Others"];
+
+// Best-guess department for items that don't have one yet
+function guessDept(it){
+  const t = (it.title||"").toLowerCase();
+  if(/pool ?club|poolside/.test(t)) return "Pool Club";
+  if(/branding|imaging|mood board|nostalgia|product \/ image/.test(t)) return "Branding";
+  switch(it.category){
+    case "ROOM PROMOTION": return "Rooms";
+    case "CULINARY PROMOTION": return "F&B";
+    case "BANQUETS PROMOTION": return "Banquets";
+    case "CHRISTMAS CAMPAIGN": return "All Hotel";
+    default: return "Others";
+  }
+}
+
+//---------------------------------------------------------------------------
+// Seed data — transcribed from marcomm CALENDAR OF ACTIVITIES.docx
+// month = 1..12 ; day = optional fixed day-of-month for scheduled items
+//---------------------------------------------------------------------------
+function seedData(){
+  let id = 0;
+  const mk = (month, category, title, day, timeline) => ({
+    id: "a" + (++id),
+    month, category, title,
+    day: day || null,
+    description: "",
+    details: "",
+    timeline: timeline || "",
+    status: "Not Started",
+    comments: []
+  });
+  const items = [
+    // ---- JULY (7) ----
+    mk(7,"CAMPAIGN","Pool Club Opening"),
+    mk(7,"CAMPAIGN","Manu Opening"),
+    mk(7,"CAMPAIGN","Nostalgia (For Pool Club)"),
+    mk(7,"CAMPAIGN","Pool Club Product / Image"),
+    mk(7,"CAMPAIGN","Hotel Branding Mood Board"),
+    mk(7,"CAMPAIGN","Hotel Family Imaging"),
+    mk(7,"EVENTS","Manu PR Campaign Events"),
+    mk(7,"EVENTS","Pool Club PR Campaign Events"),
+    mk(7,"EVENTS","Family Events"),
+    mk(7,"ROOM PROMOTION","Suite Promo"),
+    mk(7,"ROOM PROMOTION","Seniors Promo"),
+    mk(7,"ROOM PROMOTION","Poolside / Manu Events"),
+    mk(7,"CULINARY PROMOTION","Family Menu / Offerings"),
+
+    // ---- AUGUST (8) ----
+    mk(8,"CULINARY PROMOTION","Japanese Promotion (Luna)"),
+    mk(8,"CULINARY PROMOTION","Family Menu / Offerings"),
+    mk(8,"EVENTS","Sake Nights"),
+    mk(8,"EVENTS","Japanese Cosplay Festival"),
+    mk(8,"EVENTS","Poolside / Manu Events"),
+    mk(8,"EVENTS","Family Events"),
+    mk(8,"ROOM PROMOTION","Pool Club Membership Cards"),
+    mk(8,"ROOM PROMOTION","Balikbayan Promo"),
+    mk(8,"CAMPAIGN","Nostalgia (For Pool Club)"),
+    mk(8,"CAMPAIGN","Pool Club Product / Image"),
+    mk(8,"CAMPAIGN","Hotel Branding Mood Board"),
+    mk(8,"CAMPAIGN","Hotel Family Imaging"),
+
+    // ---- SEPTEMBER (9) ----
+    mk(9,"CULINARY PROMOTION","Chinese Promotion (Luna – after ghost month)"),
+    mk(9,"CULINARY PROMOTION","Family Menu / Offerings"),
+    mk(9,"EVENTS","Mooncake Festival",25,"Starts Sept 25"),
+    mk(9,"EVENTS","Mahjong Nights",25,"Starts Sept 25"),
+    mk(9,"EVENTS","People of Iloilo"),
+    mk(9,"EVENTS","Places of Iloilo"),
+    mk(9,"EVENTS","Poolside / Manu Events"),
+    mk(9,"EVENTS","Family Events"),
+    mk(9,"ROOM PROMOTION","Mid-Autumn Festival (after ghost month)"),
+    mk(9,"ROOM PROMOTION","Flash Sale: 9/9",9,"September 9"),
+    mk(9,"ROOM PROMOTION","Pool Club Membership Cards"),
+    mk(9,"CAMPAIGN","Nostalgia (For Pool Club)"),
+    mk(9,"CAMPAIGN","Pool Club Product / Image"),
+    mk(9,"CAMPAIGN","Cultural Capital Program"),
+    mk(9,"CAMPAIGN","Hotel Branding Mood Board"),
+    mk(9,"CAMPAIGN","Hotel Family Imaging"),
+
+    // ---- OCTOBER (10) ----
+    mk(10,"CULINARY PROMOTION","Italian Food Festival (Luna)"),
+    mk(10,"CULINARY PROMOTION","Family Menu / Offerings"),
+    mk(10,"EVENTS","Opera Nights"),
+    mk(10,"EVENTS","Wine Nights"),
+    mk(10,"EVENTS","Octoberfest"),
+    mk(10,"EVENTS","Vermillion Events Tie-up Events"),
+    mk(10,"EVENTS","People of Iloilo"),
+    mk(10,"EVENTS","Places of Iloilo"),
+    mk(10,"EVENTS","Poolside / Manu Events"),
+    mk(10,"EVENTS","Family Events"),
+    mk(10,"ROOM PROMOTION","Octoberfest Weekends (ends Oct 4)",4,"Weekends, ending Oct 4"),
+    mk(10,"ROOM PROMOTION","Flash Sale: 10/10",10,"October 10"),
+    mk(10,"ROOM PROMOTION","Pool Club Membership Cards"),
+    mk(10,"BANQUETS PROMOTION","Vermillion Events Launch"),
+    mk(10,"CAMPAIGN","Nostalgia (For Vermillion Events)"),
+    mk(10,"CAMPAIGN","Pool Club Product / Image"),
+    mk(10,"CAMPAIGN","Vermillion Events Product / Image"),
+    mk(10,"CAMPAIGN","Cultural Capital Program"),
+    mk(10,"CAMPAIGN","Hotel Branding Mood Board"),
+    mk(10,"CAMPAIGN","Hotel Family Imaging"),
+
+    // ---- NOVEMBER (11) ----
+    mk(11,"CULINARY PROMOTION","Indian Festival (Luna)"),
+    mk(11,"CULINARY PROMOTION","Thanksgiving Dinner (Freddy's Night)"),
+    mk(11,"CULINARY PROMOTION","Family Menu / Offerings"),
+    mk(11,"EVENTS","Indian Music / Film Festival"),
+    mk(11,"EVENTS","Freddy's Night"),
+    mk(11,"EVENTS","Vermillion Events Tie-up Events"),
+    mk(11,"EVENTS","People of Iloilo"),
+    mk(11,"EVENTS","Places of Iloilo"),
+    mk(11,"EVENTS","Poolside / Manu Events"),
+    mk(11,"EVENTS","Family Events"),
+    mk(11,"ROOM PROMOTION","Halloween / Undas Promo",null,"Oct 30 – Nov 5"),
+    mk(11,"ROOM PROMOTION","Flash Sale: 11/11",11,"November 11"),
+    mk(11,"ROOM PROMOTION","Balikbayan Promo"),
+    mk(11,"ROOM PROMOTION","Pool Club Membership Cards"),
+    mk(11,"CAMPAIGN","Nostalgia (For Vermillion Events)"),
+    mk(11,"CAMPAIGN","Pool Club Product / Image"),
+    mk(11,"CAMPAIGN","Vermillion Events Product / Image"),
+    mk(11,"CAMPAIGN","Cultural Capital Program"),
+    mk(11,"CAMPAIGN","Hotel Branding Mood Board"),
+    mk(11,"CAMPAIGN","Hotel Family Imaging"),
+
+    // ---- DECEMBER (12) ----
+    mk(12,"CHRISTMAS CAMPAIGN","Christmas Tree Lighting"),
+    mk(12,"CHRISTMAS CAMPAIGN","Christmas Serenade Choir (Lobby)"),
+    mk(12,"CHRISTMAS CAMPAIGN","Misa de Gallo",null,"Dec 16 – 24"),
+    mk(12,"CHRISTMAS CAMPAIGN","Christmas Dinner",25,"December 25"),
+    mk(12,"CHRISTMAS CAMPAIGN","Christmas Brunch",25,"December 25"),
+    mk(12,"CHRISTMAS CAMPAIGN","New Year's Eve Count Down",31,"December 31"),
+    mk(12,"CHRISTMAS CAMPAIGN","New Year's Day Brunch",null,"January 1"),
+    mk(12,"CHRISTMAS CAMPAIGN","Christmas Hamper & Merchandise"),
+    mk(12,"CHRISTMAS CAMPAIGN","Christmas Market"),
+    mk(12,"CHRISTMAS CAMPAIGN","12 Days of Christmas (Yang Saloon)"),
+    mk(12,"CHRISTMAS CAMPAIGN","Christmas Holidays Room Promotion"),
+    mk(12,"ROOM PROMOTION","Dinagyang Promo Launch"),
+    mk(12,"ROOM PROMOTION","Pool Club Membership Cards"),
+    mk(12,"EVENTS","Vermillion Events Tie-up Events"),
+    mk(12,"EVENTS","Poolside / Manu Events"),
+    mk(12,"EVENTS","Family Events"),
+    mk(12,"CULINARY PROMOTION","Family Menu / Offerings"),
+    mk(12,"CAMPAIGN","Nostalgia (For Vermillion Events)"),
+    mk(12,"CAMPAIGN","Pool Club Product / Image"),
+    mk(12,"CAMPAIGN","Vermillion Events Product / Image"),
+    mk(12,"CAMPAIGN","Hotel Branding Mood Board"),
+    mk(12,"CAMPAIGN","Hotel Family Imaging")
+  ];
+  items.forEach(i => { i.dept = guessDept(i); });
+  return items;
+}
+
+//---------------------------------------------------------------------------
+// State + persistence
+//---------------------------------------------------------------------------
+let state = { items: [] };
+let curMonth = MONTHS[0]; // 0-indexed month
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){ const p = JSON.parse(raw); if(p && Array.isArray(p.items)){
+      state = p;
+      // migrate items saved before the department field existed
+      let migrated = false;
+      state.items.forEach(i => { if(!i.dept){ i.dept = guessDept(i); migrated = true; } });
+      if(migrated) save();
+      return;
+    } }
+  }catch(e){}
+  state = { items: seedData() };
+  save();
+}
+function save(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function uid(){ return "a" + Math.random().toString(36).slice(2,9); }
+function byId(id){ return state.items.find(i => i.id === id); }
+
+//---------------------------------------------------------------------------
+// Helpers
+//---------------------------------------------------------------------------
+function esc(s){ return (s==null?"":String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function nowStamp(){
+  const d = new Date();
+  return d.toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove('show'),1900);
+}
+
+//---------------------------------------------------------------------------
+// Render: month nav + tabs
+//---------------------------------------------------------------------------
+function renderTabs(){
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = MONTHS.map(m =>
+    `<button class="tab ${m===curMonth?'active':''}" data-m="${m}">${MONTH_NAMES[m].slice(0,3)}</button>`
+  ).join('');
+  tabs.querySelectorAll('.tab').forEach(b => b.onclick = () => { curMonth = +b.dataset.m; render(); });
+
+  document.getElementById('monthTitle').textContent = `${MONTH_NAMES[curMonth]} ${YEAR}`;
+  const idx = MONTHS.indexOf(curMonth);
+  document.getElementById('prevMo').disabled = idx <= 0;
+  document.getElementById('nextMo').disabled = idx >= MONTHS.length-1;
+
+  document.getElementById('printHead').innerHTML =
+    `<h1>Vermillion Hotel — Calendar of Activities</h1><p>${MONTH_NAMES[curMonth]} ${YEAR} · Marketing &amp; Communications</p>`;
+}
+
+//---------------------------------------------------------------------------
+// Render: ongoing chips + calendar grid for current month
+//---------------------------------------------------------------------------
+function monthItems(){ return state.items.filter(i => i.month === curMonth+1); }
+
+function renderLegend(){
+  document.getElementById('deptLegend').innerHTML = DEPTS.map(d =>
+    `<span class="lg"><span class="lsw" style="background:${DEPT_COLORS[d]}"></span>${esc(d)}</span>`
+  ).join('');
+}
+
+function renderOngoing(){
+  const wrap = document.getElementById('ongoing');
+  const items = monthItems().filter(i => !i.day).sort((a,b)=> a.category.localeCompare(b.category) || a.title.localeCompare(b.title));
+  if(!items.length){ wrap.innerHTML = `<div class="empty">No ongoing activities for this month.</div>`; return; }
+  wrap.innerHTML = items.map(i => `
+    <button class="chip" data-id="${i.id}" style="background:${deptColor(i.dept)}" title="${esc(i.category)} — ${esc(i.title)} · ${esc(i.dept||'Others')}">
+      <span class="cdot" style="background:${catColor(i.category)}"></span>
+      <span class="ctxt">${esc(i.title)}</span>
+      <span class="sflag ${statusClass(i.status)}">${esc(i.status)}</span>
+    </button>`).join('');
+  wrap.querySelectorAll('.chip').forEach(c => c.onclick = () => openDetail(c.dataset.id));
+}
+
+function renderGrid(){
+  const grid = document.getElementById('grid');
+  const first = new Date(YEAR, curMonth, 1);
+  const startDow = first.getDay();
+  const daysIn = new Date(YEAR, curMonth+1, 0).getDate();
+  const today = new Date();
+  const isThisMonth = today.getFullYear()===YEAR && today.getMonth()===curMonth;
+
+  const dated = {};
+  monthItems().filter(i => i.day).forEach(i => { (dated[i.day] = dated[i.day]||[]).push(i); });
+
+  let cells = "";
+  for(let p=0;p<startDow;p++) cells += `<div class="cell pad"></div>`;
+  for(let d=1; d<=daysIn; d++){
+    const evs = (dated[d]||[]).map(i =>
+      `<div class="ev" data-id="${i.id}" style="border-left-color:${catColor(i.category)};background:${deptColor(i.dept)}" title="${esc(i.title)} · ${esc(i.dept||'Others')}">${esc(i.title)}</div>`
+    ).join('');
+    const todayCls = (isThisMonth && today.getDate()===d) ? ' today' : '';
+    cells += `<div class="cell${todayCls}"><span class="dnum">${d}</span>${evs}</div>`;
+  }
+  const totalCells = startDow + daysIn;
+  const trail = (7 - (totalCells % 7)) % 7;
+  for(let t=0;t<trail;t++) cells += `<div class="cell pad"></div>`;
+  grid.innerHTML = cells;
+  grid.querySelectorAll('.ev').forEach(e => e.onclick = () => openDetail(e.dataset.id));
+}
+
+function render(){
+  renderTabs(); renderLegend(); renderOngoing(); renderGrid();
+}
+
+//---------------------------------------------------------------------------
+// Detail page
+//---------------------------------------------------------------------------
+let activeId = null;
+
+function openDetail(id){
+  const it = byId(id); if(!it) return;
+  activeId = id;
+  location.hash = "activity/" + id;
+  drawDetail();
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDetail(){
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  activeId = null;
+  if(location.hash.startsWith('#activity/')) history.replaceState(null,'',location.pathname+location.search);
+  render();
+}
+
+function drawDetail(){
+  const it = byId(activeId); if(!it) return;
+  const statusOpts = STATUSES.map(s => `<option value="${esc(s)}" ${s===it.status?'selected':''}>${esc(s)}</option>`).join('');
+  const comments = (it.comments||[]).map(c => `
+    <div class="comment" data-cid="${c.id}">
+      <div class="cmeta">
+        <span class="cwho">${esc(c.who||'Note')}</span>
+        <span class="cwhen">${esc(c.when||'')}</span>
+      </div>
+      <div class="ctext" data-role="ctext">${esc(c.text)}</div>
+      <div class="cact no-print">
+        <button class="linkbtn" data-cedit="${c.id}">Edit</button>
+        <button class="linkbtn danger" data-cdel="${c.id}">Delete</button>
+      </div>
+    </div>`).join('') || `<div class="empty" id="noComments">No comments yet.</div>`;
+
+  document.getElementById('page').innerHTML = `
+    <div class="page-head">
+      <div>
+        <div class="cat"><span class="cdot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${catColor(it.category)}"></span>${esc(it.category)}</div>
+        <h2>${esc(it.title)}</h2>
+        <div class="mo">${MONTH_NAMES[it.month-1]} ${YEAR}${it.day?` · Day ${it.day}`:''}</div>
+      </div>
+      <button class="btn btn-ghost no-print" id="closeDetail" title="Close" style="font-size:20px">✕</button>
+    </div>
+    <div class="page-body">
+
+      <div class="field">
+        <label>Activity</label>
+        <input type="text" id="f_title" value="${esc(it.title)}" placeholder="Activity name">
+      </div>
+
+      <div class="field">
+        <label>Description</label>
+        <textarea id="f_description" placeholder="What is this activity about?">${esc(it.description)}</textarea>
+      </div>
+
+      <div class="field">
+        <label>Details</label>
+        <textarea id="f_details" placeholder="Logistics, owners, budget, venue, requirements…">${esc(it.details)}</textarea>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label>Timeline</label>
+          <input type="text" id="f_timeline" value="${esc(it.timeline)}" placeholder="e.g. Nov 1 – 15, or specific date">
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <div class="status-row">
+            <select id="f_status">${statusOpts}</select>
+            <span class="status-pill ${statusClass(it.status)}" id="statusPill">${esc(it.status)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Category &amp; Month</label>
+        <div class="grid2">
+          <select id="f_category">${Object.keys(CAT_COLORS).map(c=>`<option ${c===it.category?'selected':''}>${c}</option>`).join('')}</select>
+          <select id="f_month">${MONTHS.map(m=>`<option value="${m+1}" ${m+1===it.month?'selected':''}>${MONTH_NAMES[m]} ${YEAR}</option>`).join('')}</select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Department (button color)</label>
+        <div class="status-row">
+          <select id="f_dept" style="max-width:260px">${DEPTS.map(d=>`<option ${d===(it.dept||'Others')?'selected':''}>${d}</option>`).join('')}</select>
+          <span id="deptSwatch" style="width:20px;height:20px;border-radius:5px;border:1px solid rgba(0,0,0,.15);background:${deptColor(it.dept)}"></span>
+        </div>
+        <div class="hint">Red = All Hotel · Blue = Rooms · Green = F&amp;B · Yellow = Pool Club · Brown = Banquets · Orange = Branding · White = Others</div>
+      </div>
+
+      <div class="field">
+        <label>Comments</label>
+        <div class="comments" id="commentList">${comments}</div>
+        <div class="add-comment no-print" style="margin-top:10px">
+          <textarea id="newComment" placeholder="Add a comment…"></textarea>
+          <div><button class="btn btn-primary" id="addComment">＋ Add comment</button></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="page-foot no-print">
+      <button class="btn danger" id="deleteActivity" style="color:#b91c1c;border-color:#f3c4c4">🗑 Delete activity</button>
+      <div style="display:flex;align-items:center;gap:12px;margin-left:auto">
+        <span class="saved-flash" id="savedFlash">✓ Saved</span>
+        <button class="btn" id="printDetail">🖨 Print / Save PDF</button>
+        <button class="btn btn-primary" id="closeDetail2">Done</button>
+      </div>
+    </div>`;
+
+  wireDetail();
+}
+
+function flashSaved(){
+  const f = document.getElementById('savedFlash'); if(!f) return;
+  f.classList.add('show'); clearTimeout(flashSaved._t);
+  flashSaved._t = setTimeout(()=>f.classList.remove('show'),1100);
+}
+
+function wireDetail(){
+  const it = byId(activeId); if(!it) return;
+  const bind = (elId, prop, after) => {
+    const el = document.getElementById(elId);
+    el.addEventListener('input', () => { it[prop] = el.value; save(); flashSaved(); after && after(); });
+    el.addEventListener('change', () => { it[prop] = el.value; save(); flashSaved(); after && after(); });
+  };
+  bind('f_title','title', () => { document.querySelector('#page h2').textContent = it.title || '(untitled)'; });
+  bind('f_description','description');
+  bind('f_details','details');
+  bind('f_timeline','timeline');
+  bind('f_status','status', () => {
+    const pill = document.getElementById('statusPill');
+    pill.textContent = it.status; pill.className = 'status-pill ' + statusClass(it.status);
+  });
+  bind('f_dept','dept', () => {
+    document.getElementById('deptSwatch').style.background = deptColor(it.dept);
+  });
+  bind('f_category','category', () => {
+    document.querySelector('#page .cat .cdot').style.background = catColor(it.category);
+    document.querySelector('#page .cat').lastChild.textContent = it.category;
+  });
+  document.getElementById('f_month').addEventListener('change', e => {
+    it.month = +e.target.value; save(); flashSaved();
+    document.querySelector('#page .mo').textContent = `${MONTH_NAMES[it.month-1]} ${YEAR}${it.day?` · Day ${it.day}`:''}`;
+  });
+
+  document.getElementById('closeDetail').onclick = closeDetail;
+  document.getElementById('closeDetail2').onclick = closeDetail;
+  document.getElementById('printDetail').onclick = () => window.print();
+  document.getElementById('deleteActivity').onclick = () => {
+    if(confirm('Delete this activity permanently?')){
+      state.items = state.items.filter(x => x.id !== activeId); save();
+      toast('Activity deleted'); closeDetail();
+    }
+  };
+
+  // Comments
+  document.getElementById('addComment').onclick = () => {
+    const ta = document.getElementById('newComment');
+    const txt = ta.value.trim(); if(!txt) return;
+    it.comments = it.comments || [];
+    it.comments.push({ id: uid(), text: txt, who: 'Note', when: nowStamp() });
+    save(); ta.value=''; drawDetail(); toast('Comment added');
+  };
+  document.querySelectorAll('[data-cdel]').forEach(b => b.onclick = () => {
+    const cid = b.dataset.cdel;
+    if(confirm('Delete this comment?')){
+      it.comments = (it.comments||[]).filter(c => c.id !== cid); save(); drawDetail();
+    }
+  });
+  document.querySelectorAll('[data-cedit]').forEach(b => b.onclick = () => {
+    const cid = b.dataset.cedit;
+    const c = (it.comments||[]).find(x => x.id === cid); if(!c) return;
+    const node = b.closest('.comment').querySelector('[data-role="ctext"]');
+    const cur = c.text;
+    node.innerHTML = `<textarea style="width:100%;min-height:54px;border:1px solid var(--line);border-radius:8px;padding:8px;font-family:inherit;font-size:13.5px">${esc(cur)}</textarea>
+      <div style="margin-top:6px;display:flex;gap:6px"><button class="btn btn-primary" data-csave="${cid}">Save</button><button class="btn" data-ccancel="${cid}">Cancel</button></div>`;
+    node.querySelector('textarea').focus();
+    node.querySelector(`[data-csave="${cid}"]`).onclick = () => {
+      c.text = node.querySelector('textarea').value.trim() || c.text;
+      c.when = nowStamp() + ' (edited)';
+      save(); drawDetail();
+    };
+    node.querySelector(`[data-ccancel="${cid}"]`).onclick = () => drawDetail();
+  });
+}
+
+//---------------------------------------------------------------------------
+// New activity
+//---------------------------------------------------------------------------
+function newActivity(){
+  const it = {
+    id: uid(), month: curMonth+1, category: "EVENTS", dept: "Others",
+    title: "New Activity", day: null,
+    description: "", details: "", timeline: "", status: "Not Started", comments: []
+  };
+  state.items.push(it); save();
+  openDetail(it.id);
+  // focus title for quick rename
+  setTimeout(()=>{ const t=document.getElementById('f_title'); if(t){ t.focus(); t.select(); } }, 30);
+}
+
+//---------------------------------------------------------------------------
+// Download / Import / Reset
+//---------------------------------------------------------------------------
+function download(filename, text, mime){
+  const blob = new Blob([text], {type: mime||'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+  a.remove(); URL.revokeObjectURL(url);
+}
+function exportJSON(){
+  download(`vermillion-calendar-${YEAR}.json`, JSON.stringify(state, null, 2), 'application/json');
+  toast('Backup downloaded');
+}
+function csvCell(v){ return '"' + String(v==null?'':v).replace(/"/g,'""') + '"'; }
+function exportCSV(){
+  const head = ["Month","Category","Department","Activity","Day","Timeline","Status","Description","Details","Comments"];
+  const rows = state.items.slice().sort((a,b)=> a.month-b.month || a.category.localeCompare(b.category) || a.title.localeCompare(b.title))
+    .map(i => [
+      MONTH_NAMES[i.month-1]+" "+YEAR, i.category, i.dept||"Others", i.title, i.day||"", i.timeline, i.status,
+      i.description, i.details,
+      (i.comments||[]).map(c => `${c.who||'Note'} (${c.when||''}): ${c.text}`).join(" | ")
+    ].map(csvCell).join(","));
+  download(`vermillion-calendar-${YEAR}.csv`, [head.map(csvCell).join(","), ...rows].join("\r\n"), 'text/csv');
+  toast('Spreadsheet downloaded');
+}
+function importJSON(file){
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const p = JSON.parse(r.result);
+      const items = Array.isArray(p) ? p : p.items;
+      if(!Array.isArray(items)) throw new Error('bad');
+      state.items = items.map(i => {
+        const o = Object.assign({id:uid(),comments:[],day:null,description:'',details:'',timeline:'',status:'Not Started'}, i);
+        if(!o.dept) o.dept = guessDept(o);
+        return o;
+      });
+      save(); render(); toast('Backup imported');
+    }catch(e){ alert('Could not read that file — expected a calendar backup JSON.'); }
+  };
+  r.readAsText(file);
+}
+function resetAll(){
+  if(confirm('Reset the calendar to the original document data? This erases your edits, added activities and comments on this device.')){
+    state = { items: seedData() }; save(); render(); toast('Reset to original');
+  }
+}
+
+//---------------------------------------------------------------------------
+// Wire top bar
+//---------------------------------------------------------------------------
+function wireChrome(){
+  document.getElementById('btnNew').onclick = newActivity;
+  document.getElementById('btnPrint').onclick = () => window.print();
+  document.getElementById('prevMo').onclick = () => { const i=MONTHS.indexOf(curMonth); if(i>0){curMonth=MONTHS[i-1];render();} };
+  document.getElementById('nextMo').onclick = () => { const i=MONTHS.indexOf(curMonth); if(i<MONTHS.length-1){curMonth=MONTHS[i+1];render();} };
+
+  const menu = document.getElementById('dlMenu');
+  document.getElementById('btnDl').onclick = (e) => { e.stopPropagation(); menu.classList.toggle('open'); };
+  document.addEventListener('click', () => menu.classList.remove('open'));
+  menu.querySelectorAll('.menu-pop button').forEach(b => b.onclick = () => {
+    menu.classList.remove('open');
+    const act = b.dataset.act;
+    if(act==='json') exportJSON();
+    else if(act==='csv') exportCSV();
+    else if(act==='import') document.getElementById('importFile').click();
+    else if(act==='reset') resetAll();
+  });
+  document.getElementById('importFile').onchange = e => { if(e.target.files[0]) importJSON(e.target.files[0]); e.target.value=''; };
+
+  document.getElementById('overlay').addEventListener('click', e => { if(e.target.id==='overlay') closeDetail(); });
+  document.addEventListener('keydown', e => { if(e.key==='Escape' && activeId) closeDetail(); });
+}
+
+//---------------------------------------------------------------------------
+// Routing (deep link to an activity page)
+//---------------------------------------------------------------------------
+function applyHash(){
+  const h = location.hash.replace(/^#/, '');
+  if(h.startsWith('activity/')){
+    const id = h.slice('activity/'.length);
+    const it = byId(id);
+    if(it){ curMonth = it.month-1; activeId = id; drawDetail();
+      document.getElementById('overlay').classList.add('open'); document.body.style.overflow='hidden'; }
+  }
+}
+
+//---------------------------------------------------------------------------
+// Init
+//---------------------------------------------------------------------------
+load();
+wireChrome();
+render();
+applyHash();
+</script>
+</body>
+</html>
