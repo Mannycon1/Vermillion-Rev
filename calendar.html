@@ -64,6 +64,29 @@
   .legend .lg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
   .legend .lsw{width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.15);flex:0 0 auto}
 
+  /* One-page monthly summary */
+  .op-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:900px;margin:0 auto 14px;background:#fff;padding:10px 14px;border-radius:10px;box-shadow:var(--shadow)}
+  .op-wrap{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+  .op-page{background:#fff;border-radius:14px;box-shadow:var(--shadow-lg);padding:26px 30px}
+  .op-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;border-bottom:3px solid var(--primary);padding-bottom:10px;margin-bottom:16px}
+  .op-head h2{margin:0;font-size:22px}
+  .op-sub{color:var(--muted);font-size:12px;margin-top:3px}
+  .op-tot{color:var(--muted);font-size:12px;white-space:nowrap}
+  .op-cols{column-count:2;column-gap:26px}
+  @media(max-width:640px){.op-cols{column-count:1}}
+  .op-dept{break-inside:avoid;margin-bottom:16px}
+  .op-dept h3{margin:0 0 4px;font-size:12px;letter-spacing:.6px;text-transform:uppercase;padding:6px 10px;border-radius:6px;border:1px solid rgba(0,0,0,.12);display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .op-count{font-weight:600;font-size:11px;color:rgba(0,0,0,.55)}
+  .op-item{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:5px 2px 5px 10px;font-size:12.5px;border-bottom:1px dashed var(--line);cursor:pointer}
+  .op-item:hover{background:var(--primary-50)}
+  .op-title{min-width:0}
+  .op-cat{color:var(--muted);font-size:11px}
+  .op-meta{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;color:var(--muted);font-size:11px}
+  .op-flag{font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600}
+  .op-key{display:flex;flex-wrap:wrap;gap:5px 14px;margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}
+  .op-key .lg{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+  .op-key .lsw{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
+
   /* Calendar grid */
   .cal{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
   .dow{display:grid;grid-template-columns:repeat(7,1fr);background:#fafbfc;border-bottom:1px solid var(--line)}
@@ -143,6 +166,10 @@
     .page-foot{display:none}
     .field input,.field textarea,.field select{border-color:#bbb}
     .ev{border:1px solid #ccc}
+    body.op-mode #app,body.op-mode .op-toolbar{display:none!important}
+    body.op-mode .op-wrap{display:block;max-width:none}
+    .op-page{box-shadow:none;border-radius:0;padding:0 0 8px;page-break-after:always}
+    .op-page:last-child{page-break-after:auto}
     @page{margin:14mm}
   }
   .print-head{display:none}
@@ -161,6 +188,7 @@
   </div>
   <div class="actions">
     <button class="btn btn-primary" id="btnNew">＋ New Activity</button>
+    <button class="btn" id="btnOnePage">📄 1-Page / Month</button>
     <button class="btn" id="btnPrint">🖨 Print</button>
     <div class="menu" id="dlMenu">
       <button class="btn" id="btnDl">⬇ Download ▾</button>
@@ -202,6 +230,18 @@
 <!-- Detail page overlay -->
 <div class="overlay" id="overlay">
   <div class="page" id="page"><!-- filled by JS --></div>
+</div>
+
+<!-- One-page monthly summary overlay -->
+<div class="overlay" id="opOverlay">
+  <div class="op-toolbar no-print">
+    <div style="font-weight:700">Promotions one-pager — prints one page per month</div>
+    <div style="display:flex;gap:8px;margin-left:auto">
+      <button class="btn" id="opPrint">🖨 Print / Save PDF</button>
+      <button class="btn btn-primary" id="opClose">Done</button>
+    </div>
+  </div>
+  <div class="op-wrap" id="opPages"></div>
 </div>
 
 <input type="file" id="importFile" accept="application/json,.json" style="display:none">
@@ -701,6 +741,57 @@ function wireDetail(){
 }
 
 //---------------------------------------------------------------------------
+// One-page monthly summary (all promotions per month, one page each)
+//---------------------------------------------------------------------------
+function onePageMeta(i){
+  if(i.timeline) return esc(i.timeline);
+  if(i.day) return MONTH_NAMES[i.month-1].slice(0,3) + " " + i.day;
+  return "All month";
+}
+function renderOnePage(){
+  document.getElementById('opPages').innerHTML = MONTHS.map(m => {
+    const items = state.items.filter(i => i.month === m+1);
+    const groups = {};
+    items.forEach(i => { const d = DEPT_COLORS[i.dept] ? i.dept : "Others"; (groups[d] = groups[d]||[]).push(i); });
+    const sections = DEPTS.filter(d => groups[d]).map(d => `
+      <div class="op-dept">
+        <h3 style="background:${DEPT_COLORS[d]}">${esc(d)}<span class="op-count">${groups[d].length}</span></h3>
+        ${groups[d].sort((a,b)=> a.category.localeCompare(b.category) || a.title.localeCompare(b.title)).map(i => `
+          <div class="op-item" data-id="${i.id}">
+            <span class="op-title">${esc(i.title)}<span class="op-cat"> · ${esc(i.category)}</span></span>
+            <span class="op-meta">${onePageMeta(i)}<span class="op-flag ${statusClass(i.status)}">${esc(i.status)}</span></span>
+          </div>`).join('')}
+      </div>`).join('');
+    const key = DEPTS.map(d => `<span class="lg"><span class="lsw" style="background:${DEPT_COLORS[d]}"></span>${esc(d)}</span>`).join('');
+    return `
+      <div class="op-page">
+        <div class="op-head">
+          <div>
+            <h2>${MONTH_NAMES[m]} ${YEAR}</h2>
+            <div class="op-sub">Vermillion Hotel · Marketing &amp; Communications — all promotions &amp; activities</div>
+          </div>
+          <div class="op-tot">${items.length} ${items.length===1?'activity':'activities'}</div>
+        </div>
+        <div class="op-cols">${sections || '<div class="empty">No activities this month.</div>'}</div>
+        <div class="op-key">${key}</div>
+      </div>`;
+  }).join('');
+  document.querySelectorAll('#opPages .op-item').forEach(el =>
+    el.onclick = () => { closeOnePage(); openDetail(el.dataset.id); });
+}
+function openOnePage(){
+  renderOnePage();
+  document.getElementById('opOverlay').classList.add('open');
+  document.body.classList.add('op-mode');
+  document.body.style.overflow = 'hidden';
+}
+function closeOnePage(){
+  document.getElementById('opOverlay').classList.remove('open');
+  document.body.classList.remove('op-mode');
+  document.body.style.overflow = '';
+}
+
+//---------------------------------------------------------------------------
 // New activity
 //---------------------------------------------------------------------------
 function newActivity(){
@@ -770,6 +861,10 @@ function resetAll(){
 function wireChrome(){
   document.getElementById('btnNew').onclick = newActivity;
   document.getElementById('btnPrint').onclick = () => window.print();
+  document.getElementById('btnOnePage').onclick = openOnePage;
+  document.getElementById('opPrint').onclick = () => window.print();
+  document.getElementById('opClose').onclick = closeOnePage;
+  document.getElementById('opOverlay').addEventListener('click', e => { if(e.target.id==='opOverlay') closeOnePage(); });
   document.getElementById('prevMo').onclick = () => { const i=MONTHS.indexOf(curMonth); if(i>0){curMonth=MONTHS[i-1];render();} };
   document.getElementById('nextMo').onclick = () => { const i=MONTHS.indexOf(curMonth); if(i<MONTHS.length-1){curMonth=MONTHS[i+1];render();} };
 
@@ -787,7 +882,11 @@ function wireChrome(){
   document.getElementById('importFile').onchange = e => { if(e.target.files[0]) importJSON(e.target.files[0]); e.target.value=''; };
 
   document.getElementById('overlay').addEventListener('click', e => { if(e.target.id==='overlay') closeDetail(); });
-  document.addEventListener('keydown', e => { if(e.key==='Escape' && activeId) closeDetail(); });
+  document.addEventListener('keydown', e => {
+    if(e.key !== 'Escape') return;
+    if(activeId) closeDetail();
+    else if(document.getElementById('opOverlay').classList.contains('open')) closeOnePage();
+  });
 }
 
 //---------------------------------------------------------------------------
