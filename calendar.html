@@ -87,6 +87,21 @@
   .op-key .lg{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
   .op-key .lsw{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
 
+  /* 6-month single-page overview */
+  .ov-wrap{max-width:1040px;margin:0 auto}
+  .ov-sheet{background:#fff;border-radius:14px;box-shadow:var(--shadow-lg);padding:22px 26px}
+  .ov-head{border-bottom:3px solid var(--primary);padding-bottom:8px;margin-bottom:12px}
+  .ov-head h2{margin:0;font-size:20px}
+  .ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px}
+  @media(max-width:700px){.ov-grid{grid-template-columns:1fr}}
+  .ov-month{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+  .ov-month h3{margin:0 0 6px;font-size:13px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--primary);padding-bottom:4px}
+  .ov-month .ov-n{font-size:10px;color:var(--muted);font-weight:600}
+  .ov-item{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:10.5px;line-height:1.25;padding:1.5px 6px;border-radius:4px;border:1px solid rgba(0,0,0,.08);margin-bottom:2px;cursor:pointer}
+  .ov-item:hover{filter:brightness(.95)}
+  .ov-item .ovt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ov-item .ovd{font-size:9.5px;color:rgba(0,0,0,.55);white-space:nowrap}
+
   /* Calendar grid */
   .cal{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
   .dow{display:grid;grid-template-columns:repeat(7,1fr);background:#fafbfc;border-bottom:1px solid var(--line)}
@@ -170,6 +185,18 @@
     body.op-mode .op-wrap{display:block;max-width:none}
     .op-page{box-shadow:none;border-radius:0;padding:0 0 8px;page-break-after:always}
     .op-page:last-child{page-break-after:auto}
+    body.ov-mode #app{display:none!important}
+    body.ov-mode .ov-wrap{max-width:none}
+    .ov-sheet{box-shadow:none;border-radius:0;padding:0}
+    .ov-head{padding-bottom:5px;margin-bottom:8px}
+    .ov-head h2{font-size:16px}
+    .ov-grid{grid-template-columns:1fr 1fr 1fr;gap:7px}
+    .ov-month{page-break-inside:avoid;padding:5px 7px}
+    .ov-month h3{font-size:10.5px;margin-bottom:4px;padding-bottom:3px}
+    .ov-month .ov-n{font-size:8.5px}
+    .ov-item{font-size:8.2px;line-height:1.2;padding:0.5px 4px;margin-bottom:1px;gap:4px}
+    .ov-item .ovd{font-size:7.5px}
+    .op-key{margin-top:8px;padding-top:6px}
     @page{margin:14mm}
   }
   .print-head{display:none}
@@ -189,6 +216,7 @@
   <div class="actions">
     <button class="btn btn-primary" id="btnNew">＋ New Activity</button>
     <button class="btn" id="btnOnePage">📄 1-Page / Month</button>
+    <button class="btn" id="btnOverview">🗓 6-Month / 1 Page</button>
     <button class="btn" id="btnPrint">🖨 Print</button>
     <div class="menu" id="dlMenu">
       <button class="btn" id="btnDl">⬇ Download ▾</button>
@@ -242,6 +270,27 @@
     </div>
   </div>
   <div class="op-wrap" id="opPages"></div>
+</div>
+
+<!-- 6-month single-page overview overlay -->
+<div class="overlay" id="ovOverlay">
+  <div class="op-toolbar no-print">
+    <div style="font-weight:700">6-month overview — the whole calendar on one page</div>
+    <div style="display:flex;gap:8px;margin-left:auto">
+      <button class="btn" id="ovPrint">🖨 Print / Save PDF</button>
+      <button class="btn btn-primary" id="ovClose">Done</button>
+    </div>
+  </div>
+  <div class="ov-wrap">
+    <div class="ov-sheet">
+      <div class="ov-head">
+        <h2>Vermillion Hotel — Calendar of Activities</h2>
+        <div class="op-sub">July – December 2026 · Marketing &amp; Communications — all promotions at a glance</div>
+      </div>
+      <div class="ov-grid" id="ovMonths"></div>
+      <div class="op-key" id="ovKey"></div>
+    </div>
+  </div>
 </div>
 
 <input type="file" id="importFile" accept="application/json,.json" style="display:none">
@@ -792,6 +841,42 @@ function closeOnePage(){
 }
 
 //---------------------------------------------------------------------------
+// 6-month overview (whole calendar on a single page)
+//---------------------------------------------------------------------------
+function renderOverview(){
+  const deptOrder = i => { const d = DEPT_COLORS[i.dept] ? i.dept : "Others"; return DEPTS.indexOf(d); };
+  document.getElementById('ovMonths').innerHTML = MONTHS.map(m => {
+    const items = state.items.filter(i => i.month === m+1)
+      .sort((a,b)=> deptOrder(a)-deptOrder(b) || a.title.localeCompare(b.title));
+    return `
+      <div class="ov-month">
+        <h3>${MONTH_NAMES[m]} ${YEAR}<span class="ov-n">${items.length} activities</span></h3>
+        ${items.map(i => `
+          <div class="ov-item" data-id="${i.id}" style="background:${deptColor(i.dept)}"
+               title="${esc(i.title)} — ${esc(i.dept||'Others')} · ${esc(i.category)}${i.timeline?` · ${esc(i.timeline)}`:''}">
+            <span class="ovt">${esc(i.title)}</span>
+            ${i.day?`<span class="ovd">${MONTH_NAMES[m].slice(0,3)} ${i.day}</span>`:''}
+          </div>`).join('') || '<div class="empty">No activities.</div>'}
+      </div>`;
+  }).join('');
+  document.getElementById('ovKey').innerHTML = DEPTS.map(d =>
+    `<span class="lg"><span class="lsw" style="background:${DEPT_COLORS[d]}"></span>${esc(d)}</span>`).join('');
+  document.querySelectorAll('#ovMonths .ov-item').forEach(el =>
+    el.onclick = () => { closeOverview(); openDetail(el.dataset.id); });
+}
+function openOverview(){
+  renderOverview();
+  document.getElementById('ovOverlay').classList.add('open');
+  document.body.classList.add('ov-mode');
+  document.body.style.overflow = 'hidden';
+}
+function closeOverview(){
+  document.getElementById('ovOverlay').classList.remove('open');
+  document.body.classList.remove('ov-mode');
+  document.body.style.overflow = '';
+}
+
+//---------------------------------------------------------------------------
 // New activity
 //---------------------------------------------------------------------------
 function newActivity(){
@@ -865,6 +950,10 @@ function wireChrome(){
   document.getElementById('opPrint').onclick = () => window.print();
   document.getElementById('opClose').onclick = closeOnePage;
   document.getElementById('opOverlay').addEventListener('click', e => { if(e.target.id==='opOverlay') closeOnePage(); });
+  document.getElementById('btnOverview').onclick = openOverview;
+  document.getElementById('ovPrint').onclick = () => window.print();
+  document.getElementById('ovClose').onclick = closeOverview;
+  document.getElementById('ovOverlay').addEventListener('click', e => { if(e.target.id==='ovOverlay') closeOverview(); });
   document.getElementById('prevMo').onclick = () => { const i=MONTHS.indexOf(curMonth); if(i>0){curMonth=MONTHS[i-1];render();} };
   document.getElementById('nextMo').onclick = () => { const i=MONTHS.indexOf(curMonth); if(i<MONTHS.length-1){curMonth=MONTHS[i+1];render();} };
 
@@ -886,6 +975,7 @@ function wireChrome(){
     if(e.key !== 'Escape') return;
     if(activeId) closeDetail();
     else if(document.getElementById('opOverlay').classList.contains('open')) closeOnePage();
+    else if(document.getElementById('ovOverlay').classList.contains('open')) closeOverview();
   });
 }
 
